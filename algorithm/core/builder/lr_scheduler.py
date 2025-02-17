@@ -6,7 +6,7 @@ from ..utils.config import configs
 
 __all__ = ['build_lr_scheduler', 'CosineLRwithWarmup']
 
-
+# Chooses the right learning rate scheduler depending on the config file
 def build_lr_scheduler(optimizer, batch_per_epoch):
     if configs.run_config.lr_schedule_name == 'cosine':
         lr_scheduler = CosineLRwithWarmup(
@@ -24,7 +24,11 @@ def build_lr_scheduler(optimizer, batch_per_epoch):
         raise NotImplementedError(configs.run_config.lr_schedule_name)
     return lr_scheduler
 
-
+# Implements Cosine Learning Rate with warmup
+# warm up raises the learning rate linearly for a certain number of steps
+# cosine learning rate modifies the learning rate following the cosine function
+# it starts with a high learning rate that oscillates with a period 
+# depending on the decay steps
 class CosineLRwithWarmup(torch.optim.lr_scheduler._LRScheduler):
 
     def __init__(self,
@@ -53,7 +57,11 @@ class CosineLRwithWarmup(torch.optim.lr_scheduler._LRScheduler):
                 for base_lr in self.base_lrs
             ]
 
-
+# Implements Step Learning Rate with warmup
+# warm up raises the learning rate linearly for a certain number of steps
+# step learning rate modifies the learning rate using gamma parameter
+# the learning rate has an exponential decrease
+# depending on gamma and the number of decay steps
 class StepLRwithWarmup(torch.optim.lr_scheduler._LRScheduler):
 
     def __init__(self,

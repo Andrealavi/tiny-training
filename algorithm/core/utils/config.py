@@ -6,8 +6,8 @@ from typing import Union
 
 configs = EasyDict()
 
-
 def load_config_from_file(file_path: str) -> None:
+    # Updates dict1 content with dict2 content
     def _iterative_update(dict1, dict2):
         for k in dict2:
             if k not in dict1:
@@ -19,7 +19,7 @@ def load_config_from_file(file_path: str) -> None:
                 else:
                     dict1[k] = dict2[k]
 
-    global configs
+    global configs # Makes configs a global variable
     if not os.path.exists(file_path):
         raise FileNotFoundError(file_path)
 
@@ -29,6 +29,8 @@ def load_config_from_file(file_path: str) -> None:
     prefix = file_path.split('configs/')[0]
     file_path = file_path[len(prefix):]
 
+    # Search the path tree trying to find default.yaml file
+    # in order to update configs dictionary
     levels = file_path.split('/')
     for i_level in range(len(levels)):
         path = prefix + '/'.join(levels[:i_level + 1])
@@ -41,7 +43,7 @@ def load_config_from_file(file_path: str) -> None:
                 _config = yaml.safe_load(f)
                 _iterative_update(configs, _config)
 
-
+# Updates configs from arguments in a dictionary or in an argparse namespace
 def update_config_from_args(args: Union[dict, argparse.Namespace]):
     global configs
 
@@ -66,7 +68,7 @@ def update_config_from_args(args: Union[dict, argparse.Namespace]):
         if not ret:
             raise ValueError(f'ERROR: Updating args failed: cannot find key: {k}')
 
-
+# Parse unknown args into a dictionary used to update configs
 def parse_unknown_args(unknown):
     def _convert_value(_v):
         try:  # int
@@ -84,7 +86,7 @@ def parse_unknown_args(unknown):
     for idx in range(len(unknown) // 2):
         k, v = unknown[idx * 2], unknown[idx * 2 + 1]
         assert k.startswith('--')
-        k = k[2:]
+        k = k[2:] # Jumps -- chars
         v = _convert_value(v)
         parsed[k] = v
     return parsed
@@ -110,7 +112,7 @@ def configs2dict(cfg):
 
 
 if __name__ == '__main__':
-    load_config_from_file('/home/jilin/workspace/clip_distill/configs/flowers102/resnet50.yaml')
+    load_config_from_file('/home/andrealavi/workspace/clip_distill/configs/flowers102/resnet50.yaml')
     print(configs.run_config.n_epochs)
     update_config_from_args({'n_epochs': 100, 'dummy': 100})
     print(configs.run_config.n_epochs)

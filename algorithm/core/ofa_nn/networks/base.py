@@ -1,5 +1,6 @@
 import torch.nn as nn
 
+# Defines two barebone classes used as a base for real nets classes
 
 class MyModule(nn.Module):
 

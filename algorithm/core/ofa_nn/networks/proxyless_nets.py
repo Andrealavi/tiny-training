@@ -12,12 +12,14 @@ from ..modules.layers import ResidualBlock
 
 __all__ = ['ProxylessNASNets']
 
-
+# Creates ProxilessNASNetwork from json config file
 def proxyless_base(net_config=None, n_classes=None, dropout_rate=None):
     assert net_config is not None, 'Please input a network config'
     net_config_json = json.load(open(net_config, 'r'))
 
     if n_classes is not None:
+        # Defines the number of output classes of the classifier task
+        # The number of possible classes correspond to the number of neurons of the final layer
         net_config_json['classifier']['out_features'] = n_classes
     if dropout_rate is not None:
         net_config_json['classifier']['dropout_rate'] = dropout_rate
@@ -26,7 +28,8 @@ def proxyless_base(net_config=None, n_classes=None, dropout_rate=None):
 
     return net
 
-
+# Implements a network likely obtained through proxylessNAS architecture
+# Layers have to be implemented in a subclass
 class ProxylessNASNets(MyNetwork):
 
     def __init__(self, first_conv, blocks, feature_mix_layer, classifier):
@@ -37,8 +40,10 @@ class ProxylessNASNets(MyNetwork):
         self.feature_mix_layer = feature_mix_layer
         self.classifier = classifier
 
+    # Executes the forward computation of the net
     def forward(self, x):
         x = self.first_conv(x)
+        # Blocks are residual blocks
         for block in self.blocks:
             x = block(x)
         if isinstance(self.feature_mix_layer, ConvLayer):
@@ -92,6 +97,7 @@ class ProxylessNASNets(MyNetwork):
         for m in self.modules():
             if isinstance(m, ResidualBlock):
                 if isinstance(m.conv, MBInvertedConvLayer) and isinstance(m.shortcut, IdentityLayer):
+                    # Sets the batch norm weights to zero
                     m.conv.point_linear.bn.weight.data.zero_()
 
     def load_state_dict(self, state_dict, strict=True):

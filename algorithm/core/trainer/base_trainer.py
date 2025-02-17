@@ -15,6 +15,7 @@ __all__ = ['BaseTrainer']
 
 class BaseTrainer(object):
 
+    # Inizializes trainer settings
     def __init__(self, model: nn.Module, data_loader, criterion, optimizer, lr_scheduler):
         self.model = model
         self.data_loader = data_loader
@@ -31,6 +32,7 @@ class BaseTrainer(object):
     def checkpoint_path(self):
         return os.path.join(configs.run_dir, 'checkpoint')
 
+    # Saves a training checkpoint
     def save(self, epoch=0, is_best=False):
         if dist.rank() == 0:
             checkpoint = {
@@ -48,6 +50,7 @@ class BaseTrainer(object):
             if is_best:
                 torch.save(checkpoint, os.path.join(self.checkpoint_path, 'ckpt.best.pth'))
 
+    # Resumes training using checkpoint
     def resume(self):
         model_fname = os.path.join(self.checkpoint_path, 'ckpt.pth')
         if os.path.exists(model_fname):
@@ -87,12 +90,16 @@ class BaseTrainer(object):
     def train_one_epoch(self, epoch):
         raise NotImplementedError
 
+    # Runs training
     def run_training(self):
         val_info_dict = None
         for epoch in range(self.start_epoch, configs.run_config.n_epochs + configs.run_config.warmup_epochs):
             train_info_dict = self.train_one_epoch(epoch)
             logger.info(f'epoch {epoch}: f{train_info_dict}')
 
+            # Used to perform regular model evaluation
+            # It is used to see how learning affects the task
+            # The best model is saved
             if (epoch + 1) % configs.run_config.eval_per_epochs == 0 \
                     or epoch == configs.run_config.n_epochs + configs.run_config.warmup_epochs - 1:
                 val_info_dict = self.validate()

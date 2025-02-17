@@ -24,6 +24,8 @@ __all__ = ['build_quantized_network_from_cfg', 'get_effective_scale']
 ######## pickle quantized format to simulated quantizated model ########
 ########################################################################
 
+# Effective scale is used when input has to be multiplied with weights to get the output tensor
+# It is used to make the operation match the quantized scale of the output tensor
 def get_effective_scale(scale_x, scale_w, scale_y):
     scale_x = to_np(scale_x)
     scale_y = to_np(scale_y)
@@ -34,7 +36,7 @@ def get_effective_scale(scale_x, scale_w, scale_y):
     else:
         raise NotImplementedError
 
-
+# Builds a 2d convolutional layer from config file
 def build_quantized_conv_from_cfg(conv_cfg, w_bit=8, a_bit=None):
     kwargs = {
         'zero_x': to_pt(conv_cfg['params']['x_zero']),
@@ -62,7 +64,7 @@ def build_quantized_conv_from_cfg(conv_cfg, w_bit=8, a_bit=None):
     conv.y_scale = conv_cfg['params']['y_scale']
     return conv
 
-
+# Builds the layer contained in one block configuration 
 def build_quantized_block_from_cfg(blk_cfg, n_bit=8):
     blk = []
     if blk_cfg['pointwise1'] is not None:
@@ -125,6 +127,7 @@ def build_quantized_network_from_cfg(cfg, n_bit=8):
         raise NotImplementedError
     blocks = nn.Sequential(*[build_quantized_block_from_cfg(b, n_bit=n_bit) for b in cfg['blocks']])
     if cfg['feature_mix'] is not None:  # add a feature mix layer
+        # Features mix layer mixes the channels in order to mix all the extracted features
         feature_mix_conv = build_quantized_conv_from_cfg(cfg['feature_mix'], w_bit=n_bit)
     else:
         feature_mix_conv = nn.Identity()

@@ -2,6 +2,12 @@ import copy
 import torch
 import numpy as np
 
+from algorithm.core.optimizer import build_optimizer
+from algorithm.core.optimizer.sgd_scale import SGDScale
+from algorithm.quantize.quantized_ops import QuantizedMbBlock
+from algorithm.quantize.quantized_ops_diff import QuantizedConv2dDiff
+from algorithm.quantize.quantized_ops_diff import QuantizedMbBlockDiff
+
 activation_bits = 8
 fc_bits = 0  # 32  # do not consider fc for now
 weight_bits = 8
@@ -364,7 +370,6 @@ def _get_nelem_curve():
         print(i, round(n_elem / 8 / 1024))
     print(out)
     print('in kb:', [int(round(o / 8 / 1024, 0)) for o in out])
-
 
 def compute_macs(model, backward_config, sample_input):
     from quantize.quantized_ops_diff import ScaledLinear

@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-from ..core.utils.config import configs
-from ..quantize.quantized_ops_diff import ScaledLinear
+from core.utils.config import configs
+from quantize.quantized_ops_diff import ScaledLinear
 
 def _append_flatten(model_q):
     model_q = list(model_q)
@@ -11,7 +11,9 @@ def _append_flatten(model_q):
     model_q = nn.Sequential(*model_q)
     return model_q
 
-
+# Substitues the second to last layer with a scaled linear layer
+# Scaled layer is a modifyed version of a linear layer
+# Can scale and normalize the input and focuses on floating point inputs
 def create_scaled_head(model_q, norm_feat=False):
     assert isinstance(model_q, nn.Sequential)
     if not isinstance(model_q[-1], nn.Flatten):
@@ -20,7 +22,7 @@ def create_scaled_head(model_q, norm_feat=False):
                                model_q[-2].x_scale, model_q[-2].zero_x, norm_feat=norm_feat)
     return model_q
 
-
+# Takes a quantized model and replace the last conv layer with a quantized conv layer
 def create_quantized_head(model_q):
     from .quantized_ops_diff import QuantizedConv2dDiff
     assert isinstance(model_q, nn.Sequential)
@@ -33,6 +35,7 @@ def create_quantized_head(model_q):
                                          model_q[-2].x_scale, 8)
 
     org_op = model_q[-2]
+
     # here we do not have y_scale, so that the output has the same scale
     effective_scale = (model_q[-2].x_scale * w_scales).float()
 
@@ -53,6 +56,7 @@ def get_weight_scales(w, n_bit=8, k_near_zero_tolerance=1e-6, allow_all_same=Fal
     def _extract_min_max_from_weight(weights):
         dim_size = weights.shape[0]
 
+        # If all the elements are the same mins and maxs are chosen arbitrarily
         if weights.max() == weights.min():  # all the elements are the same?
             mins = np.zeros(dim_size)
             maxs = np.zeros(dim_size)
@@ -67,10 +71,10 @@ def get_weight_scales(w, n_bit=8, k_near_zero_tolerance=1e-6, allow_all_same=Fal
                 mins[:] = maxs[:] = single_value
             return torch.from_numpy(mins).to(weights.device), torch.from_numpy(maxs).to(weights.device)
         else:
-            weights = weights.reshape(weights.shape[0], -1)
+            weights = weights.reshape(weights.shape[0], -1) # Flattens the tensor except in the first dimension
             mins = weights.min(dim=1)[0]
             maxs = weights.max(dim=1)[0]
-            maxs = torch.max(mins.abs(), maxs.abs())
+            maxs = torch.max(mins.abs(), maxs.abs()) # Make sure the interval is symmetric
             mins = -maxs
             return mins, maxs
 
@@ -87,9 +91,10 @@ def get_weight_scales(w, n_bit=8, k_near_zero_tolerance=1e-6, allow_all_same=Fal
     mins, maxs = _extract_min_max_from_weight(w)
     mins, maxs = _expand_very_small_range(mins, maxs)
     assert (mins + maxs).max() < 1e-9  # symmetric
-    return maxs / (2 ** (n_bit - 1) - 1)
+    return maxs / (2 ** (n_bit - 1) - 1) # Math formula to compute the scale
 
 
+# 
 def get_quantized_weight_and_bias(w, b, w_scales, x_scale, n_bit=8):
     w = w / w_scales.view(-1, 1, 1, 1)
     w = w.round().int()

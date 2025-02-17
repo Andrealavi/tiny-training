@@ -18,6 +18,7 @@ _logger.add(sys.stdout,
 
 
 class ExpLogger:
+    # Saves configuration into a yaml file
     def init(self):
         assert configs.run_dir is not None, 'Empty run directory!'
         if dist.rank() == 0:
@@ -30,6 +31,7 @@ class ExpLogger:
             # also dump running log to file
             _logger.add(os.path.join(configs.run_dir, 'exp.log'))
 
+    # Provides an interface for logging messages
     @staticmethod
     def info(*args):
         _logger.info(*args)
