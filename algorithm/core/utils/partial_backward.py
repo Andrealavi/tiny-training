@@ -366,6 +366,76 @@ def _get_nelem_curve():
     print('in kb:', [int(round(o / 8 / 1024, 0)) for o in out])
 
 
+def compute_macs(model, backward_config, sample_input):
+    from quantize.quantized_ops_diff import ScaledLinear
+
+    model = copy.deepcopy(model)
+
+    def record_in_out_shape(m_, x, y):
+        x = x[0]
+        m_.input_shape = list(x.shape)
+        m_.output_shape = list(y.shape)
+
+    def add_activation_shape_hook(m_):
+        m_.register_forward_hook(record_in_out_shape)
+
+    model.apply(add_activation_shape_hook)
+    _ = model(sample_input)
+
+    macs = 0
+
+    fc = model[-2]
+    assert isinstance(fc, ScaledLinear), type(fc)
+
+    macs += fc.in_features * fc.out_features
+    macs += fc.output_shape[1] * (fc.output_shape[0] + 1)
+
+    conv_ops = get_all_conv_ops(model)
+
+    for conv in conv_ops:
+        conv.weight.grad = torch.rand_like(conv.weight) * 100.
+        conv.bias.grad = torch.rand_like(conv.bias) * 100.
+
+    if backward_config["manual_weight_idx"] is None and backward_config["n_weight_update"] is None:
+        for conv in conv_ops:
+            c_out, c_in, h, w = conv.output_shape
+            macs += conv.kernel_size[0] * conv.kernel_size[1 ] * c_out * c_in * h * w
+            macs += conv.kernel_size[0] * conv.kernel_size[1] * c_out * c_in
+    elif backward_config["manual_weight_idx"] is not None and not all([r is None for r in backward_config['weight_update_ratio']]):
+        ratio_ptr = 0
+
+        for i_conv, conv in enumerate(conv_ops):
+            if i_conv in backward_config["manual_weight_idx"]:
+                c_out, c_in, h, w = conv.output_shape
+
+                keep_ratio = backward_config["weight_update_ratio"][ratio_ptr]
+                c_in = c_in * keep_ratio
+
+                macs += conv.kernel_size[0] * conv.kernel_size[1] * c_out * c_in * h * w
+                macs += conv.kernel_size[0] * conv.kernel_size[1] * c_out * c_in
+
+                ratio_ptr += 1
+    else:
+        for i_conv, conv in enumerate(conv_ops):
+            if i_conv in backward_config["manual_weight_idx"]:
+                c_out, c_in, h, w = conv.output_shape
+
+                macs += conv.kernel_size[0] * conv.kernel_size[1] * c_out * c_in * h * w
+                macs += conv.kernel_size[0] * conv.kernel_size[1] * c_out * c_in
+
+    conv_ops = conv_ops[::-1]
+
+    for i in range(backward_config["n_bias_update"]):
+        conv = conv_ops[i]
+
+        macs += conv.output_shape[0] * (conv.output_shape[2] * conv.output_shape[3])
+
+
+    del model
+
+    return macs
+
+
 if __name__ == '__main__':
     _test_nelem_saved_for_backward()
     # _get_nelem_curve()
