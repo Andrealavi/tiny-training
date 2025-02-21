@@ -5,6 +5,11 @@ import os, os.path as osp
 
 import numpy as np
 
+from convert import (
+    build_quantized_mbv2
+)
+
+
 import tvm
 from tvm import relay, te
 from tvm.contrib import graph_executor
@@ -90,7 +95,7 @@ class MRun:
     def __init__(self, mod=None, mpath=None, weights=None, wpath=None, target="llvm"):
         assert not mod or not mpath
         assert mod or mpath
-        self.dev = tvm.cpu()
+        self.dev = tvm.cuda()
         if mod:
             self.mod = mod
         elif mpath:
@@ -103,8 +108,8 @@ class MRun:
             self.mod = mod
 
         self.vs = relay.analysis.all_vars(mod["main"])
-        self.lib = relay.build(mod, target=target)
-        self.g = graph_executor.GraphModule(self.lib["default"](tvm.cpu()))
+        self.lib = relay.build(mod, target=tvm.target.cuda(arch="sm_75"))
+        self.g = graph_executor.GraphModule(self.lib["default"](tvm.cuda()))
 
         if wpath:
             print(f"weights loaded from {wpath}")
@@ -166,7 +171,7 @@ class ComputeDAG:
         mod_name="mod.ir",
         param_name="weights.params",
         target="llvm",
-        dev=tvm.cpu(0),
+        dev=tvm.cuda(0),
     ):
         self.path = path
 
@@ -200,7 +205,7 @@ class ComputeDAG:
                 ]
             )(mod_to_build)
 
-        lib = relay.build(mod_to_build, target=self.target, params=self.mod_params)
+        lib = relay.build(mod_to_build, target=tvm.target.cuda(arch="sm_75"), params=self.mod_params)
         lib_params = lib.get_params()
 
         vs = relay.analysis.all_vars(self.mod["main"])
@@ -291,3 +296,414 @@ class ComputeDAG:
     def save(self, path):
         warnings.warn("DAG.save function is deprecated!")
         mod_save(self.mod, self.mod_params, self.path)
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--n_bias_update', type=int, default=51,
+                      help='Number of bias layer to update (default: 0)')
+    parser.add_argument('--weight_idx', type=int, default=0,
+                      help='Layer index to update (default: 0)')
+    parser.add_argument('--num_classes', type=int, default=10,
+                      help='Number of classes (default: 0)')
+    parser.add_argument('--bias_only', action=argparse.BooleanOptionalAction,
+                      help='Number of classes (default: 0)')
+
+    args = parser.parse_args()
+
+    from convert import build_quantized_mcunet
+    import os, sys
+    import torch
+
+    package_path = os.path.abspath("/home/andrealavi/tirocinio/tiny-training/compilation")  # Update this to the actual path
+    sys.path.append(package_path)
+
+    from convert.pth2ir import pth_model_to_ir
+
+    num_classes = 10
+    rs = 128
+
+    model, _ = build_quantized_mbv2(num_classes=num_classes)
+
+    fwd_mod, real_params, scale_params, op_idx = pth_model_to_ir(model, input_res=[1, 3, rs, rs], num_classes=num_classes)
+
+    cfg_idx =  {
+        'enable_backward_config': 1, 'n_bias_update': args.n_bias_update, 'weight_update_ratio': [1], 'manual_weight_idx': [args.weight_idx], 'weight_select_criteria': 'magnitude+', 'pw1_weight_only': 0,
+    }
+
+    cfg_bias_only = {
+        'enable_backward_config': 1, 'n_bias_update': args.n_bias_update, 'n_weight_update': 0, 'weight_select_criteria': 'magnitude+', 'pw1_weight_only': 0,
+    }
+
+    cfg = {}
+
+    from convert import generated_backward_graph
+
+    if args.bias_only:
+        cfg = cfg_bias_only
+    else:
+        cfg = cfg_idx
+
+    bwd_mod, bwd_names, sparse_meta_info = generated_backward_graph(fwd_mod, op_idx, method="sparse_bp", sparse_bp_config=cfg, int8_bp=False)
+
+
+    package_path = os.path.abspath("/home/andrealavi/tirocinio/tiny-training/algorithm")  # Update this to the actual path
+    sys.path.append(package_path)
+
+    from algorithm.core.utils import dist
+
+    from algorithm.core.dataset.dataset_entry import build_dataset
+    from algorithm.core.utils.config import load_config_from_file, configs
+
+    load_config_from_file("../configs/transfer.yaml")
+
+    dataset = build_dataset()
+    data_loader = dict()
+
+    for split in dataset:
+        sampler = torch.utils.data.DistributedSampler( # Sampler is used to take random samples from the dataset
+            dataset[split],
+            num_replicas=dist.size(),
+            rank=dist.rank(),
+            seed=configs.manual_seed,
+            shuffle=(split == 'train')) # Shuffles only if split is true
+
+        data_loader[split] = torch.utils.data.DataLoader( # Loads data based on sampler
+            dataset[split],
+            batch_size=configs.data_provider.base_batch_size,
+            sampler=sampler,
+            num_workers=configs.data_provider.n_worker,
+            pin_memory=True,
+            drop_last=(split == 'train'),
+        )
+
+    from time import time
+
+    comp_start = time()
+    comp_mod = MRun(bwd_mod, target="cuda")
+    comp_end = time()
+
+    comp_time = comp_end - comp_start
+
+    print("modello compilato")
+
+    comp_mod.randomly_init_weights()
+
+
+    for _, (images, labels) in enumerate(data_loader["val"]):
+        img = images[0].cpu()
+        label = labels[0].cpu()
+
+        img = torch.reshape(img, shape=(1,3,128,128))
+
+        data = {
+            "input": img.numpy().astype(np.int8),
+
+            # v0 section
+            "v0_weight": model[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v0_bias": model[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v0_zero_x": model[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v0_zero_y": model[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v0_scale": model[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v1 section
+            "v1_conv_0_weight": model[1][0].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v1_conv_0_bias": model[1][0].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v1_conv_0_zero_x": model[1][0].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v1_conv_0_zero_y": model[1][0].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v1_conv_0_scale": model[1][0].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v1_conv_1_weight": model[1][0].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v1_conv_1_bias": model[1][0].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v1_conv_1_zero_x": model[1][0].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v1_conv_1_zero_y": model[1][0].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v1_conv_1_scale": model[1][0].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v2 section
+            "v2_conv_0_weight": model[1][1].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v2_conv_0_bias": model[1][1].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v2_conv_0_zero_x": model[1][1].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v2_conv_0_zero_y": model[1][1].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v2_conv_0_scale": model[1][1].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v2_conv_1_weight": model[1][1].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v2_conv_1_bias": model[1][1].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v2_conv_1_zero_x": model[1][1].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v2_conv_1_zero_y": model[1][1].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v2_conv_1_scale": model[1][1].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v2_conv_2_weight": model[1][1].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v2_conv_2_bias": model[1][1].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v2_conv_2_zero_x": model[1][1].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v2_conv_2_zero_y": model[1][1].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v2_conv_2_scale": model[1][1].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v3 section (with qadd)
+            "v3_conv_0_weight": model[1][2].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v3_conv_0_bias": model[1][2].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v3_conv_0_zero_x": model[1][2].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v3_conv_0_zero_y": model[1][2].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v3_conv_0_scale": model[1][2].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v3_conv_1_weight": model[1][2].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v3_conv_1_bias": model[1][2].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v3_conv_1_zero_x": model[1][2].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v3_conv_1_zero_y": model[1][2].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v3_conv_1_scale": model[1][2].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v3_conv_2_weight": model[1][2].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v3_conv_2_bias": model[1][2].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v3_conv_2_zero_x": model[1][2].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v3_conv_2_zero_y": model[1][2].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v3_conv_2_scale": model[1][2].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v4 section
+            "v4_conv_0_weight": model[1][3].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v4_conv_0_bias": model[1][3].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v4_conv_0_zero_x": model[1][3].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v4_conv_0_zero_y": model[1][3].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v4_conv_0_scale": model[1][3].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v4_conv_1_weight": model[1][3].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v4_conv_1_bias": model[1][3].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v4_conv_1_zero_x": model[1][3].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v4_conv_1_zero_y": model[1][3].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v4_conv_1_scale": model[1][3].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v4_conv_2_weight": model[1][3].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v4_conv_2_bias": model[1][3].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v4_conv_2_zero_x": model[1][3].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v4_conv_2_zero_y": model[1][3].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v4_conv_2_scale": model[1][3].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v5 section (with qadd)
+            "v5_conv_0_weight": model[1][4].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v5_conv_0_bias": model[1][4].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v5_conv_0_zero_x": model[1][4].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v5_conv_0_zero_y": model[1][4].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v5_conv_0_scale": model[1][4].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v5_conv_1_weight": model[1][4].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v5_conv_1_bias": model[1][4].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v5_conv_1_zero_x": model[1][4].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v5_conv_1_zero_y": model[1][4].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v5_conv_1_scale": model[1][4].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v5_conv_2_weight": model[1][4].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v5_conv_2_bias": model[1][4].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v5_conv_2_zero_x": model[1][4].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v5_conv_2_zero_y": model[1][4].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v5_conv_2_scale": model[1][4].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v6 section
+            "v6_conv_0_weight": model[1][5].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v6_conv_0_bias": model[1][5].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v6_conv_0_zero_x": model[1][5].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v6_conv_0_zero_y": model[1][5].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v6_conv_0_scale": model[1][5].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v6_conv_1_weight": model[1][5].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v6_conv_1_bias": model[1][5].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v6_conv_1_zero_x": model[1][5].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v6_conv_1_zero_y": model[1][5].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v6_conv_1_scale": model[1][5].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v6_conv_2_weight": model[1][5].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v6_conv_2_bias": model[1][5].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v6_conv_2_zero_x": model[1][5].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v6_conv_2_zero_y": model[1][5].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v6_conv_2_scale": model[1][5].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v7 section (with qadd)
+            "v7_conv_0_weight": model[1][6].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v7_conv_0_bias": model[1][6].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v7_conv_0_zero_x": model[1][6].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v7_conv_0_zero_y": model[1][6].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v7_conv_0_scale": model[1][6].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v7_conv_1_weight": model[1][6].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v7_conv_1_bias": model[1][6].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v7_conv_1_zero_x": model[1][6].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v7_conv_1_zero_y": model[1][6].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v7_conv_1_scale": model[1][6].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v7_conv_2_weight": model[1][6].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v7_conv_2_bias": model[1][6].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v7_conv_2_zero_x": model[1][6].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v7_conv_2_zero_y": model[1][6].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v7_conv_2_scale": model[1][6].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v8 section
+            "v8_conv_0_weight": model[1][7].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v8_conv_0_bias": model[1][7].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v8_conv_0_zero_x": model[1][7].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v8_conv_0_zero_y": model[1][7].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v8_conv_0_scale": model[1][7].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v8_conv_1_weight": model[1][7].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v8_conv_1_bias": model[1][7].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v8_conv_1_zero_x": model[1][7].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v8_conv_1_zero_y": model[1][7].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v8_conv_1_scale": model[1][7].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v8_conv_2_weight": model[1][7].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v8_conv_2_bias": model[1][7].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v8_conv_2_zero_x": model[1][7].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v8_conv_2_zero_y": model[1][7].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v8_conv_2_scale": model[1][7].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v9 section (with qadd)
+            "v9_conv_0_weight": model[1][8].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v9_conv_0_bias": model[1][8].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v9_conv_0_zero_x": model[1][8].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v9_conv_0_zero_y": model[1][8].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v9_conv_0_scale": model[1][8].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v9_conv_1_weight": model[1][8].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v9_conv_1_bias": model[1][8].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v9_conv_1_zero_x": model[1][8].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v9_conv_1_zero_y": model[1][8].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v9_conv_1_scale": model[1][8].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v9_conv_2_weight": model[1][8].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v9_conv_2_bias": model[1][8].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v9_conv_2_zero_x": model[1][8].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v9_conv_2_zero_y": model[1][8].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v9_conv_2_scale": model[1][8].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v10 section (with qadd)
+            "v10_conv_0_weight": model[1][9].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v10_conv_0_bias": model[1][9].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v10_conv_0_zero_x": model[1][9].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v10_conv_0_zero_y": model[1][9].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v10_conv_0_scale": model[1][9].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v10_conv_1_weight": model[1][9].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v10_conv_1_bias": model[1][9].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v10_conv_1_zero_x": model[1][9].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v10_conv_1_zero_y": model[1][9].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v10_conv_1_scale": model[1][9].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v10_conv_2_weight": model[1][9].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v10_conv_2_bias": model[1][9].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v10_conv_2_zero_x": model[1][9].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v10_conv_2_zero_y": model[1][9].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v10_conv_2_scale": model[1][9].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v11 section
+            "v11_conv_0_weight": model[1][10].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v11_conv_0_bias": model[1][10].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v11_conv_0_zero_x": model[1][10].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v11_conv_0_zero_y": model[1][10].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v11_conv_0_scale": model[1][10].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v11_conv_1_weight": model[1][10].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v11_conv_1_bias": model[1][10].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v11_conv_1_zero_x": model[1][10].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v11_conv_1_zero_y": model[1][10].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v11_conv_1_scale": model[1][10].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v11_conv_2_weight": model[1][10].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v11_conv_2_bias": model[1][10].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v11_conv_2_zero_x": model[1][10].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v11_conv_2_zero_y": model[1][10].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v11_conv_2_scale": model[1][10].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v12 section (with qadd)
+            "v12_conv_0_weight": model[1][11].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v12_conv_0_bias": model[1][11].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v12_conv_0_zero_x": model[1][11].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v12_conv_0_zero_y": model[1][11].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v12_conv_0_scale": model[1][11].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v12_conv_1_weight": model[1][11].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v12_conv_1_bias": model[1][11].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v12_conv_1_zero_x": model[1][11].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v12_conv_1_zero_y": model[1][11].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v12_conv_1_scale": model[1][11].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v12_conv_2_weight": model[1][11].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v12_conv_2_bias": model[1][11].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v12_conv_2_zero_x": model[1][11].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v12_conv_2_zero_y": model[1][11].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v12_conv_2_scale": model[1][11].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v13 section (with qadd)
+            "v13_conv_0_weight": model[1][12].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v13_conv_0_bias": model[1][12].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v13_conv_0_zero_x": model[1][12].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v13_conv_0_zero_y": model[1][12].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v13_conv_0_scale": model[1][12].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v13_conv_1_weight": model[1][12].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v13_conv_1_bias": model[1][12].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v13_conv_1_zero_x": model[1][12].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v13_conv_1_zero_y": model[1][12].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v13_conv_1_scale": model[1][12].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v13_conv_2_weight": model[1][12].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v13_conv_2_bias": model[1][12].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v13_conv_2_zero_x": model[1][12].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v13_conv_2_zero_y": model[1][12].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v13_conv_2_scale": model[1][12].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v14 section (with qadd)
+            "v14_conv_0_weight": model[1][13].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v14_conv_0_bias": model[1][13].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v14_conv_0_zero_x": model[1][13].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v14_conv_0_zero_y": model[1][13].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v14_conv_0_scale": model[1][13].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v14_conv_1_weight": model[1][13].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v14_conv_1_bias": model[1][13].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v14_conv_1_zero_x": model[1][13].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v14_conv_1_zero_y": model[1][13].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v14_conv_1_scale": model[1][13].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v14_conv_2_weight": model[1][13].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v14_conv_2_bias": model[1][13].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v14_conv_2_zero_x": model[1][13].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v14_conv_2_zero_y": model[1][13].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v14_conv_2_scale": model[1][13].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v15 section (with qadd)
+            "v15_conv_0_weight": model[1][14].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v15_conv_0_bias": model[1][14].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v15_conv_0_zero_x": model[1][14].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v15_conv_0_zero_y": model[1][14].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v15_conv_0_scale": model[1][14].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v15_conv_1_weight": model[1][14].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v15_conv_1_bias": model[1][14].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v15_conv_1_zero_x": model[1][14].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v15_conv_1_zero_y": model[1][14].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v15_conv_1_scale": model[1][14].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v15_conv_2_weight": model[1][14].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v15_conv_2_bias": model[1][14].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v15_conv_2_zero_x": model[1][14].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v15_conv_2_zero_y": model[1][14].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v15_conv_2_scale": model[1][14].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v16 section (with qadd)
+            "v16_conv_0_weight": model[1][15].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v16_conv_0_bias": model[1][15].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v16_conv_0_zero_x": model[1][15].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v16_conv_0_zero_y": model[1][15].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v16_conv_0_scale": model[1][15].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v16_conv_1_weight": model[1][15].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v16_conv_1_bias": model[1][15].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v16_conv_1_zero_x": model[1][15].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v16_conv_1_zero_y": model[1][15].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v16_conv_1_scale": model[1][15].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v16_conv_2_weight": model[1][15].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v16_conv_2_bias": model[1][15].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v16_conv_2_zero_x": model[1][15].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v16_conv_2_zero_y": model[1][15].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v16_conv_2_scale": model[1][15].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+
+            # v17 section (with qadd)
+            "v17_conv_0_weight": model[1][16].conv[0].weight.cpu().detach().numpy().astype(np.int8),
+            "v17_conv_0_bias": model[1][16].conv[0].bias.cpu().detach().numpy().astype(np.int32),
+            "v17_conv_0_zero_x": model[1][16].conv[0].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v17_conv_0_zero_y": model[1][16].conv[0].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v17_conv_0_scale": model[1][16].conv[0].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v17_conv_1_weight": model[1][16].conv[1].weight.cpu().detach().numpy().astype(np.int8),
+            "v17_conv_1_bias": model[1][16].conv[1].bias.cpu().detach().numpy().astype(np.int32),
+            "v17_conv_1_zero_x": model[1][16].conv[1].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v17_conv_1_zero_y": model[1][16].conv[1].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v17_conv_1_scale": model[1][16].conv[1].get_buffer("effective_scale").cpu().numpy().astype(np.float32),
+            "v17_conv_2_weight": model[1][16].conv[2].weight.cpu().detach().numpy().astype(np.int8),
+            "v17_conv_2_bias": model[1][16].conv[2].bias.cpu().detach().numpy().astype(np.int32),
+            "v17_conv_2_zero_x": model[1][16].conv[2].get_buffer("zero_x").cpu().numpy().astype(np.int8).reshape(1),
+            "v17_conv_2_zero_y": model[1][16].conv[2].get_buffer("zero_y").cpu().numpy().astype(np.int8).reshape(1),
+            "v17_conv_2_scale": model[1][16].conv[2].get_buffer("effective_scale").cpu().numpy().astype(np.float32)
+        }
+
+        out_start = time()
+        out = comp_mod(data)
+        out_end = time()
+
+        out_time = out_end - out_start
+
+        print("output calcolato")
+
+        with open(f"./tests/b_{args.n_bias_update}_w_{args.weight_idx}_time", "w") as f:
+            f.write(f"Updated bias: {args.n_bias_update}\n")
+            f.write(f"Weight Layer: {args.weight_idx}\n")
+            f.write(f"compilation time: {comp_time}\n")
+            f.write(f"execution time: {out_time}\n")
+
+        break
