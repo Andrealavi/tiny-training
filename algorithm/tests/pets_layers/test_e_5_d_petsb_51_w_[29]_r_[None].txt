@@ -1,0 +1,9 @@
+pets
+warmup epochs: 5
+epochs: 50
+[29]
+51
+[None]
+{'val/top1': 76.9964599609375, 'val/loss': 0.7146867513656616, 'val/best': 77.2962646484375}
+total: 147kB
+1804422

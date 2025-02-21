@@ -1,0 +1,9 @@
+cifar10
+warmup epochs: 5
+epochs: 50
+[26]
+51
+[None]
+{'val/top1': 82.87999725341797, 'val/loss': 0.47899311780929565, 'val/best': 82.87999725341797}
+total: 147kB
+1804422

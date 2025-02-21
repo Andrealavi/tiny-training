@@ -1,0 +1,9 @@
+image_folder
+warmup epochs: 5
+epochs: 50
+[]
+44
+[]
+{'val/top1': 81.03756713867188, 'val/loss': 0.7028989791870117, 'val/best': 81.11888122558594}
+total: 76kB
+459398

@@ -1,0 +1,9 @@
+new_gestures
+warmup epochs: 5
+epochs: 50
+[]
+14
+[]
+{'val/top1': 91.71666717529297, 'val/loss': 0.22774387896060944, 'val/best': 92.75}
+total: 20kB
+41606
