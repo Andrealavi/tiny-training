@@ -21,26 +21,38 @@ from .mcunetv3_wrapper import (
 )
 
 
+# Builds the quantized model
 def build_quantized_model(net_name="mbv2-w0.35", num_classes=10):
-    load_config_from_file("configs/transfer.yaml")
+
+    # Takes network data from config file
+    load_config_from_file("/home/andrealavi/tirocinio/tiny-training/configs/transfer.yaml")
     configs["net_config"]["net_name"] = net_name # "mbv2-w0.35"
-    configs["net_config"]["mcu_head_type"] = "quantized"
+    configs["net_config"]["mcu_head_type"] = "quantized" # This option is used in build_mcu_model()
 
     subnet = build_mcu_model()
-    subnet = nn.Sequential(*subnet[:5])
-    resolution = 128
+
+    subnet = nn.Sequential(*subnet[:5]) # The final network just has the first five layers
+    resolution = 128 # Resolution of input images
+
+    # Substitutes the last layer with a quantized 2d conv layer
     last = subnet[-1]
+
     subnet[-1] = QuantizedConv2dDiff(
         last.in_channels,
         num_classes,
         kernel_size=last.kernel_size,
         stride=last.stride,
+        # Quantization parameters
         zero_x=last.zero_x,
         zero_y=last.zero_y,
         effective_scale=last.effective_scale[:num_classes],
     )
     subnet[-1].y_scale = last.y_scale
     subnet[-1].x_scale = last.x_scale
+
+    # The number of weights are reduced to match the number of classes
+    # in the classification task
+    # The weights tensor dimensions are [out_ch, in_ch, ker_hei, ker_wid]
     subnet[-1].weight.data = last.weight.data[:num_classes, :, :, :]
     return subnet, resolution
 

@@ -1,4 +1,5 @@
 import os, os.path as osp
+import sys
 from copy import deepcopy
 import json
 from textwrap import indent
@@ -18,16 +19,26 @@ import tvm
 from tvm import relay, te
 from tvm.contrib import graph_executor
 
-from ..mod import mod_save, mod_load
-from ..autodiff.mcuop import *
+package_path = os.path.abspath("/home/andrealavi/tirocinio/tiny-training/compilation")  # Update this to the actual path
+sys.path.append(package_path)
 
-from .mcunetv3_wrapper import (
+from mod import mod_save, mod_load
+from autodiff.mcuop import *
+
+from convert.mcunetv3_wrapper import (
     QuantizedConv2dDiff,
     QuantizedMbBlockDiff,
     QuantizedAvgPoolDiff,
     ScaledLinear,
 )
 
+# These functions convert model layers to relay intermediate representatio using the functions
+# defined in mcuop.py
+
+#def convert_avg_pool(data):
+#    data = relay.cast(data, dtype="int32")
+#
+#    return relay.nn.avg_pool2d(data, pool_size=(2,2))
 
 def convert_QuantizedConv2dDiff(op_idx, n: QuantizedConv2dDiff, data):
     out, args = mcuconv_factory(
@@ -47,11 +58,16 @@ def convert_QuantizedConv2dDiff(op_idx, n: QuantizedConv2dDiff, data):
 def convert_QuantizedMbBlockDiff(op_idx, n: QuantizedMbBlockDiff, data):
     out = data
     sub_n = n
+
     assert isinstance(sub_n, QuantizedMbBlockDiff)
     assert isinstance(sub_n.conv, nn.Sequential)
+
     orig_out = out
     tot_params = {}
     tot_args = []
+
+    # For each convolutional layer it converts it
+    # using mcuconv_factory
     for idx2, n in enumerate(sub_n.conv):
         assert isinstance(n, QuantizedConv2dDiff)
         # print(f"{op_idx}_{idx2}_", n.bias is not None)
@@ -69,7 +85,7 @@ def convert_QuantizedMbBlockDiff(op_idx, n: QuantizedMbBlockDiff, data):
         tmp_params = extract_mcuconv2d_params(n, args)
         tot_params.update(tmp_params)
 
-    # residual
+    # Converts the residuals
     if sub_n.q_add is not None:
         out, args = mcuadd_factory(
             orig_out, out, out_channels=n.out_channels, prefix=f"{op_idx}_qadd_"
@@ -82,7 +98,7 @@ def convert_QuantizedMbBlockDiff(op_idx, n: QuantizedMbBlockDiff, data):
 
 
 def convert_ScaledLinear(op_idx, n: ScaledLinear, data):
-    out = relay.mcumean(data, axis=[2, 3], keepdims=True)
+    out = relay.mcumean(data, axis=[0, 1], keepdims=True)
     # out = relay.nn.mcutruncate(out)
     return out, {}, {}
 
@@ -92,41 +108,49 @@ def convert_QuantizedAvgPoolDiff(op_idx, n: QuantizedAvgPoolDiff, data):
     # out = relay.nn.mcutruncate(out)
     return out, {}, {}
 
-
+# Converts the visual wake words model to
+# relay intermediate representation
 def convert_vww_to_ir(vww_model, input_shape=[1, 3, 80, 80]):
     net = nn.Sequential(
         vww_model[0],
         *vww_model[1],
         *vww_model[2:],
     )
+
     data = relay.var("input", shape=input_shape, dtype="int8")
+
     tot_args = [
         data,
     ]
     tot_params = {}
     out = data
 
+    # Converts the different type of layers
     for idx, n in enumerate(net):
+        # Identity layers are not converted
+        # probably because they are not useful in conversion
         if isinstance(n, nn.Identity):
             continue
         print(idx, type(n))
-        if isinstance(n, QuantizedConv2dDiff):
+        if isinstance(n, QuantizedConv2dDiff): # Converts convolutional layer
             out, op_args, op_params = convert_QuantizedConv2dDiff(idx, n, out)
-        elif isinstance(n, QuantizedMbBlockDiff):
+        elif isinstance(n, QuantizedMbBlockDiff): # Converts mobile net block
             out, op_args, op_params = convert_QuantizedMbBlockDiff(idx, n, out)
-        elif isinstance(n, QuantizedAvgPoolDiff):
+        elif isinstance(n, QuantizedAvgPoolDiff): # Converts average pooling layer
             out, op_args, op_params = convert_QuantizedAvgPoolDiff(idx, n, out)
         else:
             raise NotImplementedError
         tot_args += op_args
         tot_params.update(op_params)
 
+    # Creates an IRModule and returns it
     expr = relay.Function(tot_args, out)
     mod = tvm.IRModule.from_expr(expr)
     mod = relay.transform.InferType()(mod)
     return mod, tot_params, idx
 
 
+# Converts a network module to its intermediate representation
 def nn_module_to_ir(model, input_res=[1, 3, 80, 80]):
     fshape = input_res
     net = model
@@ -233,6 +257,8 @@ def nn_module_to_ir(model, input_res=[1, 3, 80, 80]):
     return out, tot_args, tot_params, op_idx
 
 
+
+# Converts a network sequential module to its intermediate representation
 def nn_seq_to_ir(model, input_res=[1, 3, 80, 80]):
     param_dtype = "int8"
     data = relay.var("input", shape=input_res, dtype=param_dtype)
@@ -251,6 +277,7 @@ def nn_seq_to_ir(model, input_res=[1, 3, 80, 80]):
         convert_QuantizedAvgPoolDiff,
     )
 
+    # Converts each layer
     for idx, n in enumerate(model):
         if isinstance(n, nn.Identity):
             continue
@@ -263,6 +290,8 @@ def nn_seq_to_ir(model, input_res=[1, 3, 80, 80]):
             out, op_args, op_params = convert_QuantizedAvgPoolDiff(idx, n, out)
         else:
             raise NotImplementedError(f"{idx}: {type(n)}, not suportted")
+
+        # Saves all the arguments
         tot_args += op_args
         t_op = {}
         for k, v in op_params.items():
@@ -271,9 +300,11 @@ def nn_seq_to_ir(model, input_res=[1, 3, 80, 80]):
             t_op[k] = v
         tot_params.update(t_op)
 
+    # Converts model to relay IRModule
     expr = relay.Function(tot_args, out)
     mod = tvm.IRModule.from_expr(expr)
     mod = relay.transform.InferType()(mod)
+
     return out, tot_args, tot_params, idx
 
 

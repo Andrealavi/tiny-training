@@ -19,10 +19,10 @@ def run_single_layer_tests(start = 0, end = 50) -> None:
     for layer_idx in range(start, end, 1):
         print(f"\nTest {layer_idx + 1}/51")
         print(f"Testing weight layer: {layer_idx}")
-        
+
         # Construct the full command with single layer index
         full_command = f"{base_command} --manual_weight_idx {layer_idx}"
-        
+
         try:
             # Execute the command
             subprocess.run(full_command, shell=True, check=True)
@@ -41,16 +41,16 @@ def main():
                       help='Start testing from this layer index (default: 0)')
     parser.add_argument('--end_at', type=int, default=50,
                       help='End testing at this layer index (default: 50)')
-    
+
     args = parser.parse_args()
-    
+
     if not (0 <= args.start_from <= 50):
         raise ValueError("start_from must be between 0 and 50")
     if not (0 <= args.end_at <= 50):
         raise ValueError("end_at must be between 0 and 50")
     if args.start_from > args.end_at:
         raise ValueError("start_from cannot be greater than end_at")
-    
+
     run_single_layer_tests(args.start_from, args.end_at)
 
 if __name__ == "__main__":

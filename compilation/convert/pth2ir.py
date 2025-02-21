@@ -3,10 +3,18 @@ import torch
 
 import tvm
 from tvm import relay
-from .pth_utils import nn_seq_to_ir, nn_module_to_ir
-from ..autodiff.auto_diff import appending_loss, bias_only, compute_autodiff
+
+import sys, os
+
+package_path = os.path.abspath("/home/andrealavi/tirocinio/tiny-training/compilation")  # Update this to the actual path
+sys.path.append(package_path)
+
+from convert.pth_utils import nn_seq_to_ir, nn_module_to_ir
+from autodiff.auto_diff import appending_loss, bias_only, compute_autodiff
 
 
+# Converts pytorch model to relay intermediate representation
+# Returns the forward graph
 def pth_model_to_ir(model, input_res=(1, 3, 80, 80), num_classes=0):
     out, tot_args, export_params, op_idx = nn_module_to_ir(model, input_res=input_res)
 
@@ -45,6 +53,8 @@ def pth_model_to_ir(model, input_res=(1, 3, 80, 80), num_classes=0):
         return fwd_mod_with_loss, real_params, scale_params, op_idx
 
 
+
+# Generates the backward computation graph
 def generated_backward_graph(mod, op_idx, method, sparse_bp_config=None, int8_bp=True):
     def full_bp(v, g):
         vname = v.name_hint
@@ -116,7 +126,7 @@ def generated_backward_graph(mod, op_idx, method, sparse_bp_config=None, int8_bp
         return bwd_mod, bwd_names
     elif method == "sparse_bp":
         assert sparse_bp_config
-        from ..ir_utils import ir_scan_op
+        from compilation.ir_utils import ir_scan_op
 
         total_convs = ir_scan_op(mod["main"])["nn.mcuconv2d"]
         # build sparse bp config
