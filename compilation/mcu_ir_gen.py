@@ -1,7 +1,8 @@
 import os
 import os.path as osp
 import json
-from compilation.convert import (
+
+from convert import (
     build_quantized_mcunet,
     build_quantized_mbv2,
     build_quantized_proxyless,
@@ -10,9 +11,9 @@ from compilation.convert import (
 )
 
 # some configs
-model_name = "mcunet"
+model_name = "mbv2"
 rs = 128
-num_classes = 10
+num_classes = 102
 int8_bp = False
 
 # convert pytorch model to forward graph
@@ -34,6 +35,9 @@ if model_name == "mbv2":
         },
         "138kb": {
             'enable_backward_config': 1, 'n_bias_update': 34, 'n_weight_update': 0, 'weight_update_ratio': [1, 1, 1, 1, 1, 1, 1, 1], 'manual_weight_idx': [27, 30, 33, 36, 39, 42, 45, 48], 'weight_select_criteria': 'magnitude+', 'pw1_weight_only': 0,
+        },
+        "single_layer": {
+            'enable_backward_config': 1, 'n_bias_update': 51, 'n_weight_update': 0, 'weight_update_ratio': [1], 'manual_weight_idx': [48], 'weight_select_criteria': 'magnitude+', 'pw1_weight_only': 0,
         }
     }
 elif model_name == "mcunet":
@@ -186,6 +190,3 @@ for mem, cfg in sparse_update_config.items():
             indent=2,
         )
     print(bwd_names)
-
-
-
