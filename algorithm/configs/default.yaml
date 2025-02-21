@@ -63,6 +63,7 @@ backward_config: # for partial backward
   # mbv2
   pw1_weight_only: 0 # only update the weight of the first pointwise conv (since it has smaller input act.)
   manual_weight_idx: null
+  manual_bias_idx: null
   quantize_gradient: 0
   freeze_fc: 0
   train_scale: 0

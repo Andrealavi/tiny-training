@@ -56,6 +56,8 @@ def parsed_backward_config(backward_config, model):
     # parse config (if None, update all)
     if backward_config['n_bias_update'] == 'all':
         backward_config['n_bias_update'] = n_conv
+    elif backward_config["manual_bias_idx"] is not None:
+        backward_config['n_bias_update'] = 0
     else:
         assert isinstance(backward_config['n_bias_update'], int), backward_config['n_bias_update']
 
@@ -79,6 +81,9 @@ def parsed_backward_config(backward_config, model):
     # sanity check: the weight update layers all update bias
     for idx in backward_config['manual_weight_idx']:
         assert idx in [n_conv - 1 - i_w for i_w in range(backward_config['n_bias_update'])]
+
+    if backward_config["manual_bias_idx"] is not None:
+        backward_config["manual_bias_idx"] = [int(p) for p in str(backward_config['manual_bias_idx']).split('-')]
 
     n_weight_update = len(backward_config['manual_weight_idx'])
     if backward_config['weight_update_ratio'] is None:
@@ -297,6 +302,8 @@ def apply_backward_config(model, backward_config):
                     ratio_ptr -= 1
             else:  # only update bias; no weight
                 conv.weight.grad = None
+        elif i_conv in backward_config["manual_bias_idx"]:
+            conv.weight.grad = None
         else:  # do not even update
             conv.weight.grad = None
             conv.bias.grad = None
