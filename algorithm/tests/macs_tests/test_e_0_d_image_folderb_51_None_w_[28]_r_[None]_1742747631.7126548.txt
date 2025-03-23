@@ -1,0 +1,15 @@
+image_folder
+warmup epochs: 0
+epochs: 1
+[28]
+51
+[None]
+Validations at different epochs: 
+1: {'val/top1': 2.6020491123199463, 'val/loss': 4.5642194747924805, 'val/best': 2.6020491123199463}
+1
+[28]
+51
+[None]
+{'val/top1': 2.6020491123199463, 'val/loss': 4.5642194747924805, 'val/best': 2.6020491123199463}
+total: 144kB
+42382150
