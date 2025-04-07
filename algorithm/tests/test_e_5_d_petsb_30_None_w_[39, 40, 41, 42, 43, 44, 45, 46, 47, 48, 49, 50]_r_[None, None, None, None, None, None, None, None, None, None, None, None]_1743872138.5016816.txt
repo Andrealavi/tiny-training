@@ -1,0 +1,20 @@
+pets
+warmup epochs: 5
+epochs: 50
+[39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
+30
+[None, None, None, None, None, None, None, None, None, None, None, None]
+Validations at different epochs: 
+10: {'val/top1': 64.9768295288086, 'val/loss': 1.1318631172180176, 'val/best': 64.9768295288086}
+20: {'val/top1': 72.19950866699219, 'val/loss': 0.944633960723877, 'val/best': 72.19950866699219}
+30: {'val/top1': 74.51622009277344, 'val/loss': 0.8855499625205994, 'val/best': 74.51622009277344}
+40: {'val/top1': 76.56037139892578, 'val/loss': 0.8211857676506042, 'val/best': 76.56037139892578}
+50: {'val/top1': 76.75115966796875, 'val/loss': 0.8142019510269165, 'val/best': 76.75115966796875}
+55: {'val/top1': 76.80567169189453, 'val/loss': 0.8091635704040527, 'val/best': 76.80567169189453}
+50
+[39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
+30
+[None, None, None, None, None, None, None, None, None, None, None, None]
+{'val/top1': 76.80567169189453, 'val/loss': 0.8091635704040527, 'val/best': 76.80567169189453}
+total: 248kB
+14059526

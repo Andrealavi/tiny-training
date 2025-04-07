@@ -1,0 +1,20 @@
+image_folder
+warmup epochs: 5
+epochs: 50
+[39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
+51
+[None, None, None, None, None, None, None, None, None, None, None, None]
+Validations at different epochs: 
+10: {'val/top1': 63.96162033081055, 'val/loss': 1.331475019454956, 'val/best': 63.96162033081055}
+20: {'val/top1': 81.37908935546875, 'val/loss': 0.6907968521118164, 'val/best': 81.37908935546875}
+30: {'val/top1': 83.76972198486328, 'val/loss': 0.5955111384391785, 'val/best': 83.76972198486328}
+40: {'val/top1': 85.02195739746094, 'val/loss': 0.5577218532562256, 'val/best': 85.02195739746094}
+50: {'val/top1': 85.88388061523438, 'val/loss': 0.5335732698440552, 'val/best': 85.88388061523438}
+55: {'val/top1': 85.68872833251953, 'val/loss': 0.5358006954193115, 'val/best': 85.88388061523438}
+50
+[39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
+51
+[None, None, None, None, None, None, None, None, None, None, None, None]
+{'val/top1': 85.68872833251953, 'val/loss': 0.5358006954193115, 'val/best': 85.88388061523438}
+total: 341kB
+15658310

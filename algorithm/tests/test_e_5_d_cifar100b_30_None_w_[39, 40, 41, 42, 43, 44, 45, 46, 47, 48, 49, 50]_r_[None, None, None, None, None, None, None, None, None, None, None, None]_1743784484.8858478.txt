@@ -1,0 +1,20 @@
+cifar100
+warmup epochs: 5
+epochs: 50
+[39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
+30
+[None, None, None, None, None, None, None, None, None, None, None, None]
+Validations at different epochs: 
+10: {'val/top1': 54.86000061035156, 'val/loss': 1.6198168992996216, 'val/best': 54.86000061035156}
+20: {'val/top1': 58.720001220703125, 'val/loss': 1.4774974584579468, 'val/best': 58.720001220703125}
+30: {'val/top1': 61.189998626708984, 'val/loss': 1.3820990324020386, 'val/best': 61.189998626708984}
+40: {'val/top1': 64.0999984741211, 'val/loss': 1.2812608480453491, 'val/best': 64.0999984741211}
+50: {'val/top1': 65.0, 'val/loss': 1.2363840341567993, 'val/best': 65.0}
+55: {'val/top1': 64.94000244140625, 'val/loss': 1.2321932315826416, 'val/best': 65.0}
+50
+[39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
+30
+[None, None, None, None, None, None, None, None, None, None, None, None]
+{'val/top1': 64.94000244140625, 'val/loss': 1.2321932315826416, 'val/best': 65.0}
+total: 248kB
+14059526

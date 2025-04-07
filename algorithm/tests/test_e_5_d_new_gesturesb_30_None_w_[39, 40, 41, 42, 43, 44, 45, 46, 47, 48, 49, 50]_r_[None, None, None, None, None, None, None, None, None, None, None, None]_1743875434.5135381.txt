@@ -1,0 +1,20 @@
+new_gestures
+warmup epochs: 5
+epochs: 50
+[39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
+30
+[None, None, None, None, None, None, None, None, None, None, None, None]
+Validations at different epochs: 
+10: {'val/top1': 89.44999694824219, 'val/loss': 0.35855236649513245, 'val/best': 89.44999694824219}
+20: {'val/top1': 87.43333435058594, 'val/loss': 0.6436111330986023, 'val/best': 89.44999694824219}
+30: {'val/top1': 87.91666412353516, 'val/loss': 0.49526354670524597, 'val/best': 89.44999694824219}
+40: {'val/top1': 86.38333129882812, 'val/loss': 0.6210677623748779, 'val/best': 89.44999694824219}
+50: {'val/top1': 87.63333129882812, 'val/loss': 0.5502254962921143, 'val/best': 89.44999694824219}
+55: {'val/top1': 87.76667022705078, 'val/loss': 0.5581846237182617, 'val/best': 89.44999694824219}
+50
+[39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
+30
+[None, None, None, None, None, None, None, None, None, None, None, None]
+{'val/top1': 87.76667022705078, 'val/loss': 0.5581846237182617, 'val/best': 89.44999694824219}
+total: 248kB
+14059526
