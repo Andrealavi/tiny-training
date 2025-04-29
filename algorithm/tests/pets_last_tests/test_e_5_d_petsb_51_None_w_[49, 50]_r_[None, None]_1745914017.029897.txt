@@ -1,0 +1,17 @@
+pets
+warmup epochs: 5
+epochs: 20
+[49, 50]
+51
+[None, None]
+Validations at different epochs: 
+10: {'val/top1': 71.3545913696289, 'val/loss': 0.8832526206970215, 'val/best': 71.3545913696289}
+20: {'val/top1': 75.82447814941406, 'val/loss': 0.751710057258606, 'val/best': 75.82447814941406}
+25: {'val/top1': 75.9334945678711, 'val/loss': 0.7425145506858826, 'val/best': 75.9334945678711}
+20
+[49, 50]
+51
+[None, None]
+{'val/top1': 75.9334945678711, 'val/loss': 0.7425145506858826, 'val/best': 75.9334945678711}
+total: 184kB
+5119814

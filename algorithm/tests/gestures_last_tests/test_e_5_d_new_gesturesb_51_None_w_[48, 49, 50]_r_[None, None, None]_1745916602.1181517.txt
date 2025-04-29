@@ -1,0 +1,17 @@
+new_gestures
+warmup epochs: 5
+epochs: 20
+[48, 49, 50]
+51
+[None, None, None]
+Validations at different epochs: 
+10: {'val/top1': 91.48332977294922, 'val/loss': 0.2569481134414673, 'val/best': 91.48332977294922}
+20: {'val/top1': 91.73332977294922, 'val/loss': 0.22866018116474152, 'val/best': 91.73332977294922}
+25: {'val/top1': 90.1500015258789, 'val/loss': 0.27120843529701233, 'val/best': 91.73332977294922}
+20
+[48, 49, 50]
+51
+[None, None, None]
+{'val/top1': 90.1500015258789, 'val/loss': 0.27120843529701233, 'val/best': 91.73332977294922}
+total: 204kB
+5485382

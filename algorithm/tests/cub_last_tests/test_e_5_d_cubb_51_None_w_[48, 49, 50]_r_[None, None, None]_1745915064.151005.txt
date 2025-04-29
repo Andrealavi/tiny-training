@@ -1,0 +1,17 @@
+cub
+warmup epochs: 5
+epochs: 20
+[48, 49, 50]
+51
+[None, None, None]
+Validations at different epochs: 
+10: {'val/top1': 45.12697219848633, 'val/loss': 2.181654214859009, 'val/best': 45.12697219848633}
+20: {'val/top1': 52.57378005981445, 'val/loss': 1.9192816019058228, 'val/best': 52.57378005981445}
+25: {'val/top1': 53.70624542236328, 'val/loss': 1.9038400650024414, 'val/best': 53.70624542236328}
+20
+[48, 49, 50]
+51
+[None, None, None]
+{'val/top1': 53.70624542236328, 'val/loss': 1.9038400650024414, 'val/best': 53.70624542236328}
+total: 204kB
+5485382
