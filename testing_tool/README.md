@@ -27,6 +27,8 @@ Follow these steps to set up your environment and install the necessary dependen
 2.  **Create and Activate a Virtual Environment**
     It is highly recommended to use a virtual environment to manage project dependencies.
 
+    I have decided to use a simple python virtualenv because this will be available by default with python and can be used even on machines where the user does not have root access/privileges, such as a remote servers. To allow for this the code in the `algorithm` folder has been modified as there were some incompatibilities with the latest libraries versions (e.g. numpy).
+
     ```bash
     # Create the virtual environment
     python -m venv .venv
