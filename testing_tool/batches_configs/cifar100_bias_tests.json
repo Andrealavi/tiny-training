@@ -1,0 +1,2960 @@
+[
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 1,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 2,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 3,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 4,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 5,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 6,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 7,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 8,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 9,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 10,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 11,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 12,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 13,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 14,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 15,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 16,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 17,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 18,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 19,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 20,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 21,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 22,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 23,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 24,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 25,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 26,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 27,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 28,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 29,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 30,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 31,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 32,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 33,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 34,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 35,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 36,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 37,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 38,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 39,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 40,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 41,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 42,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 43,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 44,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 45,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 46,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 47,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 48,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 49,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 50,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  },
+  {
+    "run_dir": "runs/",
+    "manual_seed": 0,
+    "evaluate": false,
+    "ray_tune": 0,
+    "resume": 0,
+    "data_provider": {
+      "dataset": "cifar100",
+      "root": "/home/alavino/dataset/",
+      "resize_scale": 0.08,
+      "color_aug": 0.4,
+      "base_batch_size": 64,
+      "n_worker": 8,
+      "image_size": 128,
+      "num_classes": 102
+    },
+    "run_config": {
+      "n_epochs": 50,
+      "base_lr": 0.025,
+      "bs256_lr": 0.01,
+      "warmup_epochs": 5,
+      "warmup_lr": 0,
+      "lr_schedule_name": "cosine",
+      "weight_decay": 0,
+      "no_wd_keys": [
+        "norm",
+        "bias"
+      ],
+      "optimizer_name": "sgd",
+      "bias_only": 0,
+      "fc_only": 0,
+      "fc_lr10": 0,
+      "eval_per_epochs": 10,
+      "grid_output": null,
+      "grid_ckpt_path": null,
+      "n_block_update": -1
+    },
+    "net_config": {
+      "net_name": "mbv2-w0.35",
+      "pretrained": false,
+      "cls_head": "linear",
+      "dropout": 0.0,
+      "mcu_head_type": "fp"
+    },
+    "backward_config": {
+      "enable_backward_config": 1,
+      "n_bias_update": 51,
+      "n_weight_update": 0,
+      "weight_update_ratio": null,
+      "weight_select_criteria": "magnitude+",
+      "pw1_weight_only": 0,
+      "manual_weight_idx": [],
+      "manual_bias_idx": null,
+      "quantize_gradient": 0,
+      "freeze_fc": 0,
+      "train_scale": 0
+    }
+  }
+]
