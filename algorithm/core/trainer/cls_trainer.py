@@ -5,21 +5,31 @@ from ..utils.basic import DistributedMetric, accuracy
 from ..utils.config import configs
 from ..utils import dist
 
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+elif torch.mps.is_available():
+    device = torch.device("mps")
+else:
+    device = torch.device("cpu")
+
 
 class ClassificationTrainer(BaseTrainer):
+    # Testing of the classifier
     def validate(self):
-        self.model.eval()
+        self.model.eval() # Sets the model in evaluation mode
+
+        # Sets loss function criterion
         val_criterion = self.criterion  # torch.nn.CrossEntropyLoss()
 
         val_loss = DistributedMetric('val_loss')
         val_top1 = DistributedMetric('val_top1')
 
-        with torch.no_grad():
+        with torch.no_grad(): # Disables gradient calculations
             with tqdm(total=len(self.data_loader['val']),
                       desc='Validate',
                       disable=dist.rank() > 0 or configs.ray_tune) as t:
                 for images, labels in self.data_loader['val']:
-                    images, labels = images.cuda(), labels.cuda()
+                    images, labels = images.to(device), labels.to(device)
                     # compute output
                     output = self.model(images)
                     loss = val_criterion(output, labels)
@@ -39,8 +49,43 @@ class ClassificationTrainer(BaseTrainer):
             'val/loss': val_loss.avg.item(),
         }
 
+    def validate_quantize(self):
+        self.model.eval() # Sets the model in evaluation mode
+
+        # Sets loss function criterion
+        val_criterion = self.criterion  # torch.nn.CrossEntropyLoss()
+
+        val_loss = DistributedMetric('val_loss')
+        val_top1 = DistributedMetric('val_top1')
+
+        with torch.no_grad(): # Disables gradient calculations
+            with tqdm(total=len(self.data_loader['val']),
+                      desc='Validate',
+                      disable=dist.rank() > 0 or configs.ray_tune) as t:
+                for images, labels in self.data_loader['val']:
+                    #images, labels = images.to(device), labels.to(device)
+                    # compute output
+                    output = self.model(images)
+                    loss = val_criterion(output, labels)
+                    val_loss.update(loss, images.shape[0])
+                    acc1 = accuracy(output, labels, topk=(1,))[0]
+                    val_top1.update(acc1.item(), images.shape[0])
+
+                    t.set_postfix({
+                        'loss': val_loss.avg.item(),
+                        'top1': val_top1.avg.item(),
+                        'batch_size': images.shape[0],
+                        'img_size': images.shape[2],
+                    })
+                    t.update()
+        return {
+            'val/top1': val_top1.avg.item(),
+            'val/loss': val_loss.avg.item(),
+        }
+
+    # Training for one epoch
     def train_one_epoch(self, epoch):
-        self.model.train()
+        self.model.train() # Sets the model in training mode
         self.data_loader['train'].sampler.set_epoch(epoch)
 
         train_loss = DistributedMetric('train_loss')
@@ -50,11 +95,21 @@ class ClassificationTrainer(BaseTrainer):
                   desc='Train Epoch #{}'.format(epoch + 1),
                   disable=dist.rank() > 0 or configs.ray_tune) as t:
             for _, (images, labels) in enumerate(self.data_loader['train']):
-                images, labels = images.cuda(), labels.cuda()
+                images, labels = images.to(device), labels.to(device)
+                #images, labels = images.cpu(), labels.cpu()
                 self.optimizer.zero_grad()
 
+                #out = self.model(images[0])
+
+                #print(images.shap
+
+                #images = torch.quantize_per_tensor_dynamic(images, dtype=torch.quint8, reduce_range=False)
+
                 output = self.model(images)
+                #output = self.model(images.int_repr().float())
+
                 loss = self.criterion(output, labels)
+
                 # backward and update
                 loss.backward()
 

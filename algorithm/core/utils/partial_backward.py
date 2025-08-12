@@ -2,6 +2,12 @@ import copy
 import torch
 import numpy as np
 
+from algorithm.core.optimizer import build_optimizer
+from algorithm.core.optimizer.sgd_scale import SGDScale
+from algorithm.quantize.quantized_ops import QuantizedMbBlock
+from algorithm.quantize.quantized_ops_diff import QuantizedConv2dDiff
+from algorithm.quantize.quantized_ops_diff import QuantizedMbBlockDiff
+
 activation_bits = 8
 fc_bits = 0  # 32  # do not consider fc for now
 weight_bits = 8
@@ -50,6 +56,8 @@ def parsed_backward_config(backward_config, model):
     # parse config (if None, update all)
     if backward_config['n_bias_update'] == 'all':
         backward_config['n_bias_update'] = n_conv
+    elif backward_config["manual_bias_idx"] is not None:
+        backward_config['n_bias_update'] = 0
     else:
         assert isinstance(backward_config['n_bias_update'], int), backward_config['n_bias_update']
 
@@ -73,6 +81,9 @@ def parsed_backward_config(backward_config, model):
     # sanity check: the weight update layers all update bias
     for idx in backward_config['manual_weight_idx']:
         assert idx in [n_conv - 1 - i_w for i_w in range(backward_config['n_bias_update'])]
+
+    if backward_config["manual_bias_idx"] is not None:
+        backward_config["manual_bias_idx"] = [int(p) for p in str(backward_config['manual_bias_idx']).split('-')]
 
     n_weight_update = len(backward_config['manual_weight_idx'])
     if backward_config['weight_update_ratio'] is None:
@@ -154,7 +165,7 @@ def nelem_saved_for_backward(model, sample_input, backward_config, verbose=True,
         if conv.bias.grad is not None:  # this layer is updated
             # TODO: the mask and input might be counted twice; maybe we should fix this (or not, depends on impl.)?
             # if update, always update bias
-            this_activation_size = np.product(conv.output_shape[1:]) * 1  # binary mask
+            this_activation_size = np.prod(conv.output_shape[1:]) * 1  # binary mask
             this_weight_size = conv.bias.numel() * bias_bits
             this_momentum_size = conv.bias.numel() * momentum_bits
 
@@ -164,7 +175,7 @@ def nelem_saved_for_backward(model, sample_input, backward_config, verbose=True,
                     weight_shape = conv.weight.shape  # o, 1, k, k
                     grad_norm = torch.norm(conv.weight.grad.data.view(weight_shape[0], -1), dim=1)
                     channels = (grad_norm > 0).sum().item()
-                    this_activation_size += np.product(conv.input_shape[2:]) * channels * activation_bits
+                    this_activation_size += np.prod(conv.input_shape[2:]) * channels * activation_bits
                     this_weight_size += (channels * weight_shape[2] * weight_shape[3]) * weight_bits
                     this_momentum_size += (channels * weight_shape[2] * weight_shape[3]) * momentum_bits
                 else:
@@ -177,7 +188,7 @@ def nelem_saved_for_backward(model, sample_input, backward_config, verbose=True,
                         channels = conv.in_channels  # save all input channels
                         weight_elem = conv.weight.data.numel()  # update all weights
 
-                    this_activation_size += np.product(conv.input_shape[2:]) * channels * activation_bits
+                    this_activation_size += np.prod(conv.input_shape[2:]) * channels * activation_bits
                     this_weight_size += weight_elem * weight_bits
                     this_momentum_size += weight_elem * momentum_bits
 
@@ -365,6 +376,90 @@ def _get_nelem_curve():
     print(out)
     print('in kb:', [int(round(o / 8 / 1024, 0)) for o in out])
 
+def compute_macs(model, backward_config, sample_input):
+    from quantize.quantized_ops_diff import ScaledLinear
+
+    model = copy.deepcopy(model)
+
+    def record_in_out_shape(m_, x, y):
+        x = x[0]
+        m_.input_shape = list(x.shape)
+        m_.output_shape = list(y.shape)
+
+    def add_activation_shape_hook(m_):
+        m_.register_forward_hook(record_in_out_shape)
+
+    model.apply(add_activation_shape_hook)
+    _ = model(sample_input)
+
+    macs = 0
+
+    fc = model[-2]
+    assert isinstance(fc, ScaledLinear), type(fc)
+
+    macs += fc.in_features * fc.out_features
+    macs += fc.output_shape[1] * (fc.output_shape[0] + 1)
+
+    conv_ops = get_all_conv_ops(model)
+
+    for conv in conv_ops:
+        conv.weight.grad = torch.rand_like(conv.weight) * 100.
+        conv.bias.grad = torch.rand_like(conv.bias) * 100.
+
+    if backward_config["manual_weight_idx"] is None and backward_config["n_weight_update"] is None:
+        for conv in conv_ops:
+            c_out, c_in, h, w = conv.output_shape
+            macs += conv.kernel_size[0] * conv.kernel_size[1] * c_out * c_in * h * w
+            macs += conv.kernel_size[0] * conv.kernel_size[1] * c_out * c_in
+    elif backward_config["manual_weight_idx"] is not None and not all([r is None for r in backward_config['weight_update_ratio']]):
+        ratio_ptr = 0
+
+        min_conv = min(backward_config["manual_weight_idx"])
+
+        for i_conv, conv in enumerate(conv_ops):
+            if i_conv in backward_config["manual_weight_idx"]:
+                c_out, c_in, h, w = conv.output_shape
+
+                keep_ratio = backward_config["weight_update_ratio"][ratio_ptr]
+                c_in = c_in * keep_ratio
+
+                macs += conv.kernel_size[0] * conv.kernel_size[1] * c_out * c_in * h * w
+                macs += conv.kernel_size[0] * conv.kernel_size[1] * c_out * c_in
+
+                ratio_ptr += 1
+    else:
+        min_conv = 51
+
+        if (len(backward_config["manual_weight_idx"]) > 0):
+            min_conv = min(backward_config["manual_weight_idx"])
+
+        for i_conv, conv in enumerate(conv_ops):
+            if i_conv in backward_config["manual_weight_idx"]:
+                c_out, c_in, h, w = conv.output_shape
+                
+                if _is_depthwise_conv(conv):
+                    macs += conv.kernel_size[0] * conv.kernel_size[1] * c_out * h * w
+                else:
+                    macs += conv.kernel_size[0] * conv.kernel_size[1] * c_out * c_in * h * w
+                
+                macs += conv.kernel_size[0] * conv.kernel_size[1] * c_out * c_in
+    conv_ops = conv_ops[::-1]
+
+    for i in range(backward_config["n_bias_update"] - 1):
+        conv = conv_ops[i]
+        c_out, c_in, h, w = conv.input_shape
+
+        if _is_depthwise_conv(conv):
+            macs += conv.kernel_size[0] * conv.kernel_size[1] * conv.out_channels * h * w
+        else:
+            macs += conv.kernel_size[0] * conv.kernel_size[1] * conv.in_channels * conv.out_channels * h * w
+
+        macs += conv.output_shape[0]
+
+
+    del model
+
+    return macs
 
 if __name__ == '__main__':
     _test_nelem_saved_for_backward()

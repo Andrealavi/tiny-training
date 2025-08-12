@@ -5,17 +5,35 @@ import torchvision
 
 __all__ = ['build_dataset']
 
-
+# Returns a dict containing train and val folders of the selected dataset
 def build_dataset():
     if configs.data_provider.dataset == 'image_folder':
         dataset = ImageFolder(
-            root=configs.data_provider.root,
+            root="/Users/andrea/dataset/flowers102", # TODO
+            transforms=ImageTransform(),
+        )
+    elif configs.data_provider.dataset == 'new_gestures':
+        dataset = ImageFolder(
+            root="/home/alavino/dataset/new_gestures",
+            transforms=ImageTransform(),
+        )
+    elif configs.data_provider.dataset == 'pets':
+        dataset = ImageFolder(
+            root="/home/alavino/dataset/pets",
+            transforms=ImageTransform(),
+        )
+    elif configs.data_provider.dataset == "cub":
+        dataset = ImageFolder(
+            root="/home/alavino/dataset/cub",
             transforms=ImageTransform(),
         )
     elif configs.data_provider.dataset == 'imagenet':
+        # I don't find any imagenet function
         dataset = ImageNet(root=configs.data_provider.root,
                        transforms=ImageTransform(), )
     elif configs.data_provider.dataset == 'cifar10':
+        # Downloads the dataset and saves it to root
+        # before returing the dataset dict
         dataset = {
             'train': torchvision.datasets.CIFAR10(configs.data_provider.root, train=True,
                                                   transform=ImageTransform()['train'], download=True),
@@ -23,6 +41,8 @@ def build_dataset():
                                                 transform=ImageTransform()['val'], download=True),
         }
     elif configs.data_provider.dataset == 'cifar100':
+        # Downloads the dataset and saves it to root
+        # before returing the dataset dict
         dataset = {
             'train': torchvision.datasets.CIFAR100(configs.data_provider.root, train=True,
                                                    transform=ImageTransform()['train'], download=True),
@@ -30,6 +50,7 @@ def build_dataset():
                                                  transform=ImageTransform()['val'], download=True),
         }
     elif configs.data_provider.dataset == 'imagehog':
+        # I don't find any imagehog function
         dataset = ImageHog(
             root=configs.data_provider.root,
             transforms=ImageTransform(),

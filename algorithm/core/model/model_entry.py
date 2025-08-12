@@ -1,17 +1,19 @@
 import torch
-from ...core.utils.config import configs 
-from ...quantize.custom_quantized_format import build_quantized_network_from_cfg
-from ...quantize.quantize_helper import create_scaled_head, create_quantized_head
+from ..utils.config import configs
+from quantize.custom_quantized_format import build_quantized_network_from_cfg
+from quantize.quantize_helper import create_scaled_head, create_quantized_head
 
 __all__ = ['build_mcu_model']
 
 
 def build_mcu_model():
-    cfg_path = f"assets/mcu_models/{configs.net_config.net_name}.pkl"
-    cfg = torch.load(cfg_path)
-    
+    cfg_path = f"/Users/andrea/tiny-training/assets/mcu_models/{configs.net_config.net_name}.pkl"
+    cfg = torch.load(cfg_path, weights_only=False)
+
+    # Returns an nn.Sequential object that represents the network
     model = build_quantized_network_from_cfg(cfg, n_bit=8)
 
+    # Creates a quantized or scaled layer at the end of the net
     if configs.net_config.mcu_head_type == 'quantized':
         model = create_quantized_head(model)
     elif configs.net_config.mcu_head_type == 'fp':

@@ -18,12 +18,19 @@ REGISTERED_OPTIMIZER_DICT = {
     'adamw': (torch.optim.AdamW, {}),
 }
 
-
+# Sets up weight decay rules for the network parameters
 def default_wd_rules(model):
+    # Parameters with weight decay
     net_params_with_wd = []
+    # Parameters without weight decay
     net_params_without_wd = []
+
+    # Lists all the network parameters in order to find which one
+    # require wd
     for name, param in model.named_parameters():
+        # Params that require gradient might require wd
         if param.requires_grad:
+            # Searchs for a partial match in the param name
             if configs.run_config.no_wd_keys is not None \
                     and np.any([key in name for key in configs.run_config.no_wd_keys]):
                 net_params_without_wd.append(param)
@@ -38,10 +45,14 @@ def default_wd_rules(model):
         print(p['weight_decay'], len(p['params']))
     return net_params
 
-
+# Creates and configure the optimizer for training
+# The optimizer updates network weights during training
 def build_optimizer(model):
+    # Checks whether the nCreates ProxilessNASNetwork from json config fileet is contained in a wrapper or not
     if hasattr(model, "module"):
         model = model.module
+
+    # Adjusts learning rate using batch size
     if configs.run_config.bs256_lr is not None:
         org_base_lr = configs.run_config.base_lr
         configs.run_config.base_lr = configs.run_config.bs256_lr / 256 * configs.data_provider.base_batch_size
@@ -49,6 +60,9 @@ def build_optimizer(model):
               f'(bs{configs.data_provider.base_batch_size}), '
               f'total lr {configs.run_config.base_lr * dist.size()} '
               f'(total bs {configs.data_provider.base_batch_size * dist.size()})')
+        
+    # Configuration for bias only update
+    # Only the bias of the last fully connected layer are updated
     if configs.run_config.bias_only:
         param2update = []
         for name, p in model.named_parameters():
@@ -58,12 +72,18 @@ def build_optimizer(model):
 
         print('total param to update', len(param2update))
         net_params = param2update
+
+    # Configuration for second to last layer update
+    # Only the second to last fully connected layer is updated
     elif configs.run_config.fc_only:
         from quantize.quantized_ops_diff import ScaledLinear, QuantizedConv2dDiff
         assert isinstance(model[-2], (ScaledLinear, QuantizedConv2dDiff)), type(model[-2])
         param2update = [model[-2].weight, model[-2].bias]
         print('total param to update', len(param2update))
         net_params = param2update
+
+    # Configuration for last blocks update
+    # Only the last n blocks are updated
     elif configs.run_config.n_block_update > 0:
         param2update = list(model.classifier.parameters())
         for blk in model.blocks[-configs.run_config.n_block_update:]:
@@ -75,11 +95,14 @@ def build_optimizer(model):
     else:
         net_params = default_wd_rules(model)
 
+    # Takes optimizer class and defaul params
     optimizer_class, default_params = REGISTERED_OPTIMIZER_DICT[configs.run_config.optimizer_name]
 
+    # If there are extra configuration settings they are taken
     if configs.run_config.get('optimizer_params', None) is not None:
         default_params.update(configs.run_config.optimizer_params)
 
+    # Scales the learning rate based on the number of different processes
     default_params['lr'] = configs.run_config.base_lr * dist.size()
 
     optimizer = optimizer_class(net_params, **default_params)

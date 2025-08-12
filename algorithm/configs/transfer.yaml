@@ -1,5 +1,5 @@
 data_provider:
-  root: /home/jilin/dataset/flowers102
+  root: /home/alavino/dataset/ # Change this when needed
   num_classes: 102
 
 run_config:

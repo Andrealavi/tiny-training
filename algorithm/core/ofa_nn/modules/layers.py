@@ -2,6 +2,8 @@
 # Han Cai, Chuang Gan, Tianzhe Wang, Zhekai Zhang, Song Han
 # International Conference on Learning Representations (ICLR), 2020.
 
+# Define a set of layers that will be used in the networks folder
+
 from collections import OrderedDict
 
 import torch.nn as nn
@@ -10,6 +12,8 @@ __all__ = ['set_layer_from_config', 'My2DLayer', 'ConvLayer', 'DepthConvLayer', 
            'LinearLayer', 'ZeroLayer', 'MBInvertedConvLayer', 'ResidualBlock']
 
 
+# Utility function used to convert layers name in the configuration file to actual layer classes
+# then return the correspondant layer builded 
 def set_layer_from_config(layer_config):
     if layer_config is None:
         return None
@@ -26,12 +30,12 @@ def set_layer_from_config(layer_config):
 
     layer_name = layer_config.pop('name')
     layer = name2layer[layer_name]
-    return layer.build_from_config(layer_config)
+    return layer.build_from_config(layer_config) #TODO Where is this function?
 
-
+# Computes the correct padding kernel should have to match input dimension after convolution
 def get_same_padding(kernel_size):
     if isinstance(kernel_size, tuple):
-        assert len(kernel_size) == 2, 'invalid kernel size: %s' % kernel_size
+        assert len(kernel_size) == 2, 'invalid kernel size: %s' % kernel_size # Make use of python percent formatting
         p1 = get_same_padding(kernel_size[0])
         p2 = get_same_padding(kernel_size[1])
         return [p1, p2]
@@ -39,7 +43,7 @@ def get_same_padding(kernel_size):
     # assert kernel_size % 2 > 0, 'kernel size should be odd number'
     return (kernel_size - 1) // 2
 
-
+# Returns the proper activation function based on the act_func string
 def build_activation(act_func, inplace=True):
     if act_func == 'relu':
         return nn.ReLU(inplace=inplace)
@@ -96,6 +100,8 @@ class My2DLayer(MyModule):
         modules['act'] = build_activation(self.act_func, self.ops_list[0] != 'act')
         # dropout
         if self.dropout_rate > 0:
+            # Dropout is a layer that sets to zeroes channels to prevent overfitting
+            # It works randomly
             modules['dropout'] = nn.Dropout2d(self.dropout_rate, inplace=True)
         else:
             modules['dropout'] = None
@@ -119,6 +125,7 @@ class My2DLayer(MyModule):
     def ops_list(self):
         return self.ops_order.split('_')
 
+    # If batch norm is activated, should be done even before weights
     @property
     def bn_before_weight(self):
         for op in self.ops_list:
@@ -158,7 +165,7 @@ class My2DLayer(MyModule):
     def build_from_config(config):
         raise NotImplementedError
 
-
+# Implement a 2DConvolutionalLayer
 class ConvLayer(My2DLayer):
 
     def __init__(self, in_channels, out_channels,
@@ -173,6 +180,7 @@ class ConvLayer(My2DLayer):
 
         super(ConvLayer, self).__init__(in_channels, out_channels, use_bn, act_func, dropout_rate, ops_order)
 
+    # Creates a 2D convolutional layer
     def weight_op(self):
         padding = get_same_padding(self.kernel_size)
         if isinstance(padding, int):
@@ -191,6 +199,7 @@ class ConvLayer(My2DLayer):
 
         return weight_dict
 
+    # Convert the module to str
     @property
     def module_str(self):
         if isinstance(self.kernel_size, int):
@@ -222,6 +231,7 @@ class ConvLayer(My2DLayer):
             **super(ConvLayer, self).config,
         }
 
+    # Allows to build the layer using config information
     @staticmethod
     def build_from_config(config):
         return ConvLayer(**config)
@@ -243,6 +253,7 @@ class DepthConvLayer(My2DLayer):
             in_channels, out_channels, use_bn, act_func, dropout_rate, ops_order,
         )
 
+    # 
     def weight_op(self):
         padding = get_same_padding(self.kernel_size)
         if isinstance(padding, int):
@@ -252,10 +263,12 @@ class DepthConvLayer(My2DLayer):
             padding[1] *= self.dilation
 
         weight_dict = OrderedDict()
+        # Depthconv operates on each channel differently. So each channel has its own filter
         weight_dict['depth_conv'] = nn.Conv2d(
             self.in_channels, self.in_channels, kernel_size=self.kernel_size, stride=self.stride, padding=padding,
             dilation=self.dilation, groups=self.in_channels, bias=False
         )
+        # Pointconv combines output from depthconv across all channels
         weight_dict['point_conv'] = nn.Conv2d(
             self.in_channels, self.out_channels, kernel_size=1, groups=self.groups, bias=self.bias
         )
@@ -290,7 +303,7 @@ class DepthConvLayer(My2DLayer):
     def build_from_config(config):
         return DepthConvLayer(**config)
 
-
+# Implements a pooling layer
 class PoolingLayer(My2DLayer):
 
     def __init__(self, in_channels, out_channels,
@@ -343,6 +356,7 @@ class PoolingLayer(My2DLayer):
         return PoolingLayer(**config)
 
 
+# Implements an identity layer
 class IdentityLayer(My2DLayer):
 
     def __init__(self, in_channels=None, out_channels=None,
@@ -354,7 +368,7 @@ class IdentityLayer(My2DLayer):
 
     @property
     def module_str(self):
-        return 'Identity'
+        return 'Identity'pytorch
 
     @property
     def config(self):
@@ -393,13 +407,16 @@ class LinearLayer(MyModule):
                 modules['bn'] = nn.BatchNorm1d(out_features)
         else:
             modules['bn'] = None
+
         # activation
         modules['act'] = build_activation(self.act_func, self.ops_list[0] != 'act')
+        
         # dropout
         if self.dropout_rate > 0:
             modules['dropout'] = nn.Dropout(self.dropout_rate, inplace=True)
         else:
             modules['dropout'] = None
+        
         # linear
         modules['weight'] = {'linear': nn.Linear(self.in_features, self.out_features, self.bias)}
 
@@ -479,7 +496,7 @@ class ZeroLayer(MyModule):
     def build_from_config(config):
         return ZeroLayer(**config)
 
-
+# Implements an inverted convolutional layer
 class MBInvertedConvLayer(MyModule):
     SE_BASE_CHANNEL = True
 
@@ -493,12 +510,14 @@ class MBInvertedConvLayer(MyModule):
 
         self.kernel_size = kernel_size
         self.stride = stride
+        # Expand ratio is used when expanding the feature map
         self.expand_ratio = expand_ratio
         self.mid_channels = mid_channels
         self.act_func = act_func
         self.use_se = use_se
         self.pw1_groups = pw1_groups
 
+        # Number of channel to add
         if self.mid_channels is None:
             feature_dim = round(self.in_channels * self.expand_ratio)
         else:
@@ -507,6 +526,7 @@ class MBInvertedConvLayer(MyModule):
         if self.expand_ratio == 1:
             self.inverted_bottleneck = None
         else:
+            # Creates the inverted bottleneck layer
             self.inverted_bottleneck = nn.Sequential(OrderedDict([
                 ('conv', nn.Conv2d(self.in_channels, feature_dim, 1, 1, 0, bias=False, groups=pw1_groups)),
                 ('bn', nn.BatchNorm2d(feature_dim)),
@@ -527,6 +547,7 @@ class MBInvertedConvLayer(MyModule):
                 raise NotImplementedError
             self.depth_conv = nn.Sequential(OrderedDict(depth_conv_modules))
 
+        # Pointwise convolution layer
         self.point_linear = nn.Sequential(OrderedDict([
             ('conv', nn.Conv2d(feature_dim, out_channels, 1, 1, 0, bias=False)),
             ('bn', nn.BatchNorm2d(out_channels)),
@@ -573,6 +594,7 @@ class MBInvertedConvLayer(MyModule):
         return MBInvertedConvLayer(**config)
 
 
+# Implements a residual block layer
 class ResidualBlock(MyModule):
 
     def __init__(self, conv, shortcut):
@@ -587,6 +609,7 @@ class ResidualBlock(MyModule):
         elif self.shortcut is None or isinstance(self.shortcut, ZeroLayer):
             res = self.conv(x)
         else:
+            # The response is the sum of the convolution layer and the shortcut layer
             res = self.conv(x) + self.shortcut(x)
         return res
 

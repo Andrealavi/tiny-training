@@ -26,7 +26,7 @@ def to_np(x):  # cast x to np array if it is a number
         return np.array([x])
 
 
-def to_pt(x):
+def to_pt(x): # cast x from np array to tensor
     if isinstance(x, torch.Tensor):
         if x.dtype == torch.float64:
             return x.float()
@@ -82,9 +82,9 @@ class QuantizedConv2d(nn.Conv2d):
     def forward(self, x):
         # assume x and weight are both in int8
         weight = self.weight.int()  # - self.zero_w.view(-1, 1, 1, 1)
-        x = x.int() - self.zero_x
+        x: torch.Tensor = x.int() - self.zero_x
 
-        out = F.conv2d(x.float(), weight.float(), None, self.stride, self.padding, self.dilation,
+        out = F.conv2d(x, weight.float(), None, self.stride, self.padding, self.dilation,
                        self.groups).round().int()
         out = out + self.bias.int().view(1, -1, 1, 1)
         if self.effective_scale is not None:
@@ -92,6 +92,9 @@ class QuantizedConv2d(nn.Conv2d):
         else:
             out = out.type(torch.int64)
             out = out * self.significand.view(1, -1, 1, 1)
+
+            print(self.significand.shape)
+
             # add nudge
             out[out >= 0] += (1 << 30)
             out[out < 0] += (1 - (1 << 30))
@@ -114,6 +117,7 @@ class QuantizedConv2d(nn.Conv2d):
         return out.clamp(- 2 ** (self.a_bit - 1), 2 ** (self.a_bit - 1) - 1)
 
 
+# Manages element wise operations between quantized tensors
 class QuantizedElementwise(nn.Module):
     def __init__(self, operator, zero_x1, zero_x2, zero_y, scale_x1, scale_x2, scale_y):
         super().__init__()
@@ -141,6 +145,7 @@ class QuantizedElementwise(nn.Module):
         return out
 
 
+# Squeeze and Excitation block
 class QuantizedSE(nn.Module):
     def __init__(self, fc, q_mult, a_bit=8):
         super().__init__()
@@ -151,12 +156,14 @@ class QuantizedSE(nn.Module):
         self.a_bit = a_bit
 
     def forward(self, x):
-        out = self.avg_pool(x)
-        out = self.fc(out)
-        x = self.q_mult(x, out)
+        out = self.avg_pool(x) # Apply average pooling to the input tensor
+        out = self.fc(out) # Computes the attention weights using pooling data
+        x = self.q_mult(x, out) # Recalibrate the values
         return x.clamp(- 2 ** (self.a_bit - 1), 2 ** (self.a_bit - 1) - 1)
 
 
+# Implements a quantized version of the mobile net block
+# It performs a convolution and in case can perform a residual connection
 class QuantizedMbBlock(nn.Module):
     def __init__(self, conv, q_add=None, residual_conv=None, a_bit=8):
         super().__init__()
@@ -170,6 +177,7 @@ class QuantizedMbBlock(nn.Module):
         out = self.conv(x)
         if self.q_add is not None:
             if self.residual_conv is not None:
+                # Apply convolution to make residual and output dimensions equals
                 x = self.residual_conv(x)
             out = self.q_add(x, out)
             return out.clamp(- 2 ** (self.a_bit - 1), 2 ** (self.a_bit - 1) - 1)

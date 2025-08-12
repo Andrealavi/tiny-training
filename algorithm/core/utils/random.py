@@ -6,14 +6,14 @@ from typing import List, Any, Optional, Union
 
 __all__ = ['torch_random_choices', 'torch_randint', 'torch_random', 'torch_shuffle', 'torch_uniform']
 
-
+# Randomly picks elements from a list
 def torch_random_choices(src_list: List[Any], generator: Optional[torch.Generator], k=1) -> Union[Any, List[Any]]:
     rand_idx = torch.randint(low=0, high=len(src_list), generator=generator, size=(k,))
     out_list = [src_list[i] for i in rand_idx]
 
     return out_list[0] if k == 1 else out_list
 
-
+# Generates a random integer
 def torch_randint(low: int, high: int, generator: Optional[torch.Generator]) -> int:
     if low == high:
         return low
@@ -21,11 +21,11 @@ def torch_randint(low: int, high: int, generator: Optional[torch.Generator]) -> 
         assert low < high
         return int(torch.randint(low=low, high=high, generator=generator, size=(1,)))
 
-
+# Generates a random number between 0 and 1
 def torch_random(generator: Optional[torch.Generator]) -> float:
     return float(torch.rand(1, generator=generator))
 
-
+# Shuffles list elements
 def torch_shuffle(src_list: List[Any], generator: Optional[torch.Generator]) -> List[Any]:
     rand_indexes = torch.randperm(len(src_list), generator=generator).tolist()
     return [

@@ -1,4 +1,4 @@
-# our sparse update can achievehigher accuracy at lower memory usage
+# our sparse update can achieve higher accuracy at lower memory usage
 # here we use mcunet-5fps as an  example
 # we use optimizer without momentum which saves memory (as in the main results of the paper)
 
@@ -12,7 +12,3 @@ python train_cls.py   configs/transfer.yaml --run_dir runs/flowers/mcunet-5fps/s
 python train_cls.py   configs/transfer.yaml --run_dir runs/flowers/mcunet-5fps/full_update/sgd_qas_nomom \
     --net_name mcunet-5fps  --bs256_lr  0.1  --optimizer_name sgd_scale_nomom \
     --enable_backward_config 1 --n_bias_update 12 --n_weight_update 12
-
-# update full network: 1.09% (diverge, probably due to no BN)
-python train_cls.py   configs/transfer.yaml --run_dir runs/flowers/mcunet-5fps/full_update/sgd_qas_nomom \
-    --net_name mcunet-5fps  --bs256_lr  0.1  --optimizer_name sgd_scale_nomom

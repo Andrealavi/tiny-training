@@ -1,6 +1,11 @@
 import os
 from typing import Callable, Dict, Optional
 
+# Torchvision is a package for computer vision
+# Contains datasets, model architectures and
+# common image trasformations
+# Datasets provides built-in dataset and
+# utilities to create them
 from torchvision import datasets
 import warnings
 import random
@@ -8,6 +13,7 @@ import random
 __all__ = ['ImageFolder']
 
 
+# Create an image folder class that suppresses warning messages
 class ImageFolerFilterWarning(datasets.ImageFolder):
     def __init__(self, root: str,
                  transform: Optional[Callable] = None,
@@ -18,15 +24,20 @@ class ImageFolerFilterWarning(datasets.ImageFolder):
 
     def __getitem__(self, index):
         with warnings.catch_warnings():
-            warnings.filterwarnings('ignore')
+            warnings.filterwarnings('ignore') # Warnings are ignored
             return super().__getitem__(index)
 
 
+# The real image folder is a dictionary containing
+# two image folders: one for training and the other for
+# evaluation
 class ImageFolder(dict):
     def __init__(self,
                  root: str,
                  transforms: Optional[Dict[str, Callable]] = None,
                  target_transforms: Optional[Dict[str, Callable]] = None) -> None:
+        # Contain the functions that should be used to transform
+        # the images contained in the folderdi
         if transforms is None:
             transforms = {'train': None, 'val': None}
         if target_transforms is None:
