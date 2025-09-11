@@ -51,6 +51,7 @@ Follow these steps to set up your environment and install the necessary dependen
 ## Usage
 
 The main entry point for the tool is `sput.py`. All commands are run from your terminal.
+**Important Note**: Please make sure to execute the script from `testing_tool` folder, otherwise there could be an error when building the model. In that case you will need to modify the path that is written in `tiny-training/core/model/model_entry.py` to be the absolute path to the `tiny-training` folder.
 
 After all the trainings have been completed the program will create a CSV/JSON file with the following structure:
 
