@@ -9,22 +9,22 @@ __all__ = ['build_dataset']
 def build_dataset():
     if configs.data_provider.dataset == 'image_folder':
         dataset = ImageFolder(
-            root="/Users/andrea/dataset/flowers102", # TODO
+            root=f"{configs.data_provider.root}/flowers102", # TODO
             transforms=ImageTransform(),
         )
     elif configs.data_provider.dataset == 'new_gestures':
         dataset = ImageFolder(
-            root="/home/alavino/dataset/new_gestures",
+            root=f"{configs.data_provider.root}/new_gestures",
             transforms=ImageTransform(),
         )
     elif configs.data_provider.dataset == 'pets':
         dataset = ImageFolder(
-            root="/home/alavino/dataset/pets",
+            root=f"{configs.data_provider.root}/dataset/pets",
             transforms=ImageTransform(),
         )
     elif configs.data_provider.dataset == "cub":
         dataset = ImageFolder(
-            root="/home/alavino/dataset/cub",
+            root=f"{configs.data_provider.root}/cub",
             transforms=ImageTransform(),
         )
     elif configs.data_provider.dataset == 'imagenet':
