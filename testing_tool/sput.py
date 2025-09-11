@@ -281,6 +281,7 @@ def main(
     total_trainings = len(training_configs)
     for config in training_configs:
         print(f"Performing {count}/{total_trainings} training\n\n")
+        count += 1
         val_dicts, memory, macs = perform_training(config)
 
         # These are the base information that will be printed in the csv or JSON.
