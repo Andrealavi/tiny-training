@@ -285,9 +285,8 @@ def main(
 
         # These are the base information that will be printed in the csv or JSON.
         # Other that these, we have checkpoints information about accuracy results
-        # at different epochs checkpoint. Where does a checkpoint evaluation
-        # happens depends on the particular training configuration and can be
-        # chosen.
+        # at different epochs checkpoint. How frequent checkpoint evaluations
+        # are depend on the particular training configuration.
         base_info = {
             "timestamp": time(),
             "model_name": config.net_config.net_name,
