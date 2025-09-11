@@ -1,3 +1,5 @@
+import os
+
 import torch
 from ..utils.config import configs
 from quantize.custom_quantized_format import build_quantized_network_from_cfg
@@ -7,7 +9,12 @@ __all__ = ['build_mcu_model']
 
 
 def build_mcu_model():
-    cfg_path = f"/Users/andrea/tiny-training/assets/mcu_models/{configs.net_config.net_name}.pkl"
+    # Get the current working directory and navigate to the project root
+    current_dir = os.getcwd()
+    # Assuming we're in ~/tiny-training/testing_tool, go up one level
+    project_root = os.path.dirname(current_dir)
+    cfg_path = os.path.join(project_root, "algorithm", "assets", "mcu_models", f"{configs.net_config.net_name}.pkl")
+
     cfg = torch.load(cfg_path, weights_only=False)
 
     # Returns an nn.Sequential object that represents the network
