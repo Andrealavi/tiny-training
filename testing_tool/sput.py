@@ -132,15 +132,21 @@ def perform_training(training_config: TrainingConfig):
 
         return (trainer.training_validations, saved_for_backward, backward_macs)  # for ray tune
 
-def write_csv(filename, csv_data: List[dict]) -> None:
+def write_data(filename: str, out_format: str, data: List[dict]) -> None:
     os.makedirs("./tests", exist_ok=True)
 
-    csv_header = list(csv_data[0].keys())
     with open(f"./tests/{filename}", "w") as f:
-        writer = csv.DictWriter(f, fieldnames=csv_header)
+        if out_format == "csv":
+            csv_header = list(data[0].keys())
+            writer = csv.DictWriter(f, fieldnames=csv_header)
 
-        writer.writeheader()
-        writer.writerows(csv_data)
+            writer.writeheader()
+            writer.writerows(data)
+        elif out_format == "json":
+            json_data = json.dumps(data, indent=4)
+            f.write(json_data)
+        else:
+            raise ValueError("Invalid output format")
 
         f.close()
 
@@ -167,7 +173,7 @@ def load_configs_from_file(filename: str) -> List[TrainingConfig]:
 
 def main(
     # Top-level TrainingConfig attributes
-    run_dir: Optional[str] = typer.Option("", help="Run directory path"),
+    run_dir: Optional[str] = typer.Option("./runs", help="Run directory path"),
 
     # DataProviderConfig attributes
     dataset: str = typer.Option("image_folder", help="Dataset type"),
@@ -193,7 +199,8 @@ def main(
     manual_bias_idx: Optional[int] = typer.Option(None, help="Manual bias index"),
     quantize_gradient: bool = typer.Option(False, help="Quantize gradient"),
 
-    batch: str = typer.Option("", help="File containing batches of training configs")
+    batch: str = typer.Option("", help="File containing batches of training configs"),
+    out_format: str = typer.Option("csv", help="Format of the output file (csv or json)")
 ):
     """
     CLI tool for training configuration with all parameters.
@@ -202,7 +209,7 @@ def main(
     print("Training started with the provided configuration...")
 
     training_configs = []
-    csv_data = []
+    data = []
     if batch != "":
         training_configs = load_configs_from_file(batch)
     else:
@@ -258,17 +265,16 @@ def main(
         }
 
         for epoch, val in val_dicts.items():
-            csv_row_dict = base_info.copy()
+            row_dict = base_info.copy()
 
-            csv_row_dict["epoch"] = str(epoch)
-            csv_row_dict["top1_accuracy"] = str(val["val/top1"])
-            csv_row_dict["loss"] = str(val["val/loss"])
+            row_dict["epoch"] = str(epoch)
+            row_dict["top1_accuracy"] = str(val["val/top1"])
+            row_dict["loss"] = str(val["val/loss"])
 
-            csv_data.append(csv_row_dict)
+            data.append(row_dict)
 
-    filename = f"training_{time()}"
-    write_csv(filename, csv_data)
-
+    filename = f"training_{time()}.{out_format}"
+    write_data(filename, out_format, data)
 
 if __name__ == "__main__":
     typer.run(main)
