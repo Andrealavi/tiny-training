@@ -1,15 +1,20 @@
+# Imports needed to make the tool work.
 import os
 import sys
 import json
 import csv
-from pydantic import ValidationError
-import typer
+from pydantic import ValidationError # Pydantic has been used for data validation
+import typer # Typer has been used to set up a fully-fledged cli tool
 from typing import Optional, List
 from time import time
 from config import TrainingConfig
 
+# The following line is used to add the algorithm folder within the PATH
+# environment variable. This way it is possible to import algorithm folder
+# modules and packages.
 sys.path.insert(0, "../algorithm")
 
+# Import needed to make the training work.
 import torch
 import torch.backends.cudnn as cudnn
 import torch.utils.data.distributed
@@ -23,6 +28,12 @@ from core.optimizer import build_optimizer
 from core.trainer.cls_trainer import ClassificationTrainer
 from core.builder.lr_scheduler import build_lr_scheduler
 
+from core.utils.partial_backward import parsed_backward_config, prepare_model_for_backward_config, \
+    get_all_conv_ops, nelem_saved_for_backward, compute_macs
+
+# Here we set the device variable depending on the platform.
+# Specifically, we consider only CUDA (NVIDIA) and mps (Apple Silicon).
+# If neither of the two is available, we just use the CPU.
 if torch.cuda.is_available():
     device = torch.device("cuda")
 elif torch.mps.is_available():
@@ -30,20 +41,28 @@ elif torch.mps.is_available():
 else:
     device = torch.device("cpu")
 
-
+# This function performs a complete training using a specific training configuration.
+# It primarily uses the code from the train_cls.py file within the algorithm folder.
 def perform_training(training_config: TrainingConfig):
+    # Converting training configuration into a python dictionary.
+    # training_config is a specific class made using Pydantic in order to perform
+    # data validation. However, we need to convert it back to a dictionary or
+    # access it using attribute access. For our purposes it is better to have a
+    # dictionary, as the original MIT code use an easydict for managing configurations.
     training_config_dict = training_config.model_dump()
 
+    # Here we convert weight indices and update ratios from strings to arrays.
     if training_config_dict["backward_config"]["manual_weight_idx"]:
         training_config_dict["backward_config"]["manual_weight_idx"] = "-".join(map(str, training_config_dict["backward_config"]["manual_weight_idx"]))
     if training_config_dict["backward_config"]["weight_update_ratio"]:
         training_config_dict["backward_config"]["weight_update_ratio"] = "-".join(map(str, training_config_dict["backward_config"]["weight_update_ratio"]))
 
+    # This line of code updates the configuration easydict using the dictionary
+    # obtained from the training_config.
     update_config_from_args(training_config_dict)
 
     dist.init() # Initializes a process
     torch.backends.cudnn.benchmark = True
-    # torch.cuda.set_device(dist.local_rank())
 
     assert configs.run_dir is not None
     os.makedirs(configs.run_dir, exist_ok=True)
@@ -55,20 +74,25 @@ def perform_training(training_config: TrainingConfig):
 
     # set random seed
     torch.manual_seed(configs.manual_seed)
-    torch.cuda.manual_seed_all(configs.manual_seed)
+
+    if device == torch.device("cuda"):
+        torch.cuda.set_device(dist.local_rank())
+        torch.cuda.manual_seed_all(configs.manual_seed)
 
     # create dataset
     dataset = build_dataset()
     data_loader = dict()
     for split in dataset:
-        sampler = torch.utils.data.DistributedSampler( # Sampler is used to take random samples from the dataset
+        # Sampler is used to take random samples from the dataset
+        sampler = torch.utils.data.DistributedSampler(
             dataset[split],
             num_replicas=dist.size(),
             rank=dist.rank(),
             seed=configs.manual_seed,
             shuffle=(split == 'train')) # Shuffles only if split is true
 
-        data_loader[split] = torch.utils.data.DataLoader( # Loads data based on sampler
+        # Loads data based on sampler
+        data_loader[split] = torch.utils.data.DataLoader(
             dataset[split],
             batch_size=configs.data_provider.base_batch_size,
             sampler=sampler,
@@ -78,9 +102,9 @@ def perform_training(training_config: TrainingConfig):
         )
 
     # create model
-    # model = build_mcu_model().to(device)
     model = build_mcu_model().to(device)
 
+    # Here we check if it is possible to parallelize training. If so we do that.
     if dist.size() > 1:
         model = torch.nn.parallel.DistributedDataParallel(
             model,
@@ -98,15 +122,21 @@ def perform_training(training_config: TrainingConfig):
 
     saved_for_backward = 0
 
-    # Looks for sparce update configurations
+    # Looks for sparse update configurations
     if configs.backward_config.enable_backward_config:
-        from core.utils.partial_backward import parsed_backward_config, prepare_model_for_backward_config, \
-            get_all_conv_ops, nelem_saved_for_backward, compute_macs
+        # Here we parse the sparse update configuration and prepare the model.
         configs.backward_config = parsed_backward_config(configs.backward_config, model)
+
+        # This function simply create bitmasks for each convolutional layer in
+        # case we want to perform sparse channel update.
         prepare_model_for_backward_config(model, configs.backward_config)
+
         logger.info(f'Getting backward config: {configs.backward_config} \n'
                     f'Total convs {len(get_all_conv_ops(model))}')
 
+        # Here we get a sample image to measure the number of elements that need
+        # to be saved for backward pass. This value will be then used to compute
+        # the amount of memory needed to perform backward.
         images, _ = next(iter(data_loader['train']))
         saved_for_backward = nelem_saved_for_backward(model, images.to(device), configs.backward_config)
 
@@ -115,8 +145,6 @@ def perform_training(training_config: TrainingConfig):
         return val_info_dict  # for ray tune
     else:
         val_info_dict = trainer.run_training()
-
-        from core.utils.partial_backward import compute_macs
 
         backward_macs = str(compute_macs(
             model,
@@ -132,6 +160,9 @@ def perform_training(training_config: TrainingConfig):
 
         return (trainer.training_validations, saved_for_backward, backward_macs)  # for ray tune
 
+# This function is used to write data into the selected output format (csv or JSON).
+# All data will be placed within a tests folder that will be created, in case
+# it does not exist.
 def write_data(filename: str, out_format: str, data: List[dict]) -> None:
     os.makedirs("./tests", exist_ok=True)
 
@@ -150,7 +181,9 @@ def write_data(filename: str, out_format: str, data: List[dict]) -> None:
 
         f.close()
 
-
+# This function is used to load training configurations from the JSON batch file.
+# A batch file is simple a list of different training configurations that will
+# be processed sequentially by the program.
 def load_configs_from_file(filename: str) -> List[TrainingConfig]:
     try:
         with open(filename, "r") as file:
@@ -205,7 +238,7 @@ def main(
     """
     CLI tool for training configuration with all parameters.
     """
-    # Your main logic here
+
     print("Training started with the provided configuration...")
 
     training_configs = []
@@ -250,6 +283,11 @@ def main(
         print(f"Performing {count}/{total_trainings} training\n\n")
         val_dicts, memory, macs = perform_training(config)
 
+        # These are the base information that will be printed in the csv or JSON.
+        # Other that these, we have checkpoints information about accuracy results
+        # at different epochs checkpoint. Where does a checkpoint evaluation
+        # happens depends on the particular training configuration and can be
+        # chosen.
         base_info = {
             "timestamp": time(),
             "model_name": config.net_config.net_name,
