@@ -41,17 +41,36 @@ elif torch.mps.is_available():
 else:
     device = torch.device("cpu")
 
-# This function performs a complete training using a specific training configuration.
-# It primarily uses the code from the train_cls.py file within the algorithm folder.
+
 def perform_training(training_config: TrainingConfig):
-    # Converting training configuration into a python dictionary.
-    # training_config is a specific class made using Pydantic in order to perform
-    # data validation. However, we need to convert it back to a dictionary or
-    # access it using attribute access. For our purposes it is better to have a
-    # dictionary, as the original MIT code use an easydict for managing configurations.
+    """
+    Performs a complete training using a specific training configuration.
+
+    This function primarily uses the code from the train_cls.py file within the
+    algorithm folder. It handles the entire training pipeline including model
+    creation, data loading, optimizer setup, and training execution with
+    optional sparse update configurations.
+
+    Args:
+        training_config (TrainingConfig): A Pydantic-validated training configuration
+            object containing all necessary parameters for the training process.
+
+    Returns:
+        tuple: If evaluating, returns validation info dictionary. Otherwise returns
+            a tuple containing (training_validations, saved_for_backward, backward_macs)
+            where:
+            - training_validations: Dictionary of validation results per epoch
+            - saved_for_backward: Number of elements saved for backward pass
+            - backward_macs: String representation of MACs computation for backward pass
+
+    Note:
+        The function converts the Pydantic TrainingConfig to a dictionary since the
+        original MIT code uses an easydict for managing configurations. Weight indices
+        and update ratios are converted from arrays to string format using "-" as separator.
+    """
+
     training_config_dict = training_config.model_dump()
 
-    # Here we convert weight indices and update ratios from strings to arrays.
     if training_config_dict["backward_config"]["manual_weight_idx"]:
         training_config_dict["backward_config"]["manual_weight_idx"] = "-".join(map(str, training_config_dict["backward_config"]["manual_weight_idx"]))
     if training_config_dict["backward_config"]["weight_update_ratio"]:
@@ -79,7 +98,6 @@ def perform_training(training_config: TrainingConfig):
         torch.cuda.set_device(dist.local_rank())
         torch.cuda.manual_seed_all(configs.manual_seed)
 
-    # create dataset
     dataset = build_dataset()
     data_loader = dict()
     for split in dataset:
@@ -101,7 +119,6 @@ def perform_training(training_config: TrainingConfig):
             drop_last=(split == 'train'),
         )
 
-    # create model
     model = build_mcu_model().to(device)
 
     # Here we check if it is possible to parallelize training. If so we do that.
@@ -116,7 +133,6 @@ def perform_training(training_config: TrainingConfig):
 
     trainer = ClassificationTrainer(model, data_loader, criterion, optimizer, lr_scheduler)
 
-    # kick start training
     if configs.resume:
         trainer.resume()  # trying to resume
 
@@ -160,10 +176,27 @@ def perform_training(training_config: TrainingConfig):
 
         return (trainer.training_validations, saved_for_backward, backward_macs)  # for ray tune
 
-# This function is used to write data into the selected output format (csv or JSON).
-# All data will be placed within a tests folder that will be created, in case
-# it does not exist.
+
 def write_data(filename: str, out_format: str, data: List[dict]) -> None:
+    """
+    Writes data into the selected output format (CSV or JSON).
+
+    All data will be placed within a 'tests' folder that will be created
+    if it does not exist. The function supports both CSV and JSON output formats.
+
+    Args:
+        filename (str): Name of the output file (without path, will be saved in ./tests/)
+        out_format (str): Format of the output file, either "csv" or "json"
+        data (List[dict]): List of dictionaries containing the data to be written
+
+    Raises:
+        ValueError: If out_format is not "csv" or "json"
+
+    Note:
+        For CSV format, the function uses the keys from the first dictionary as headers.
+        For JSON format, the data is written with 4-space indentation for readability.
+    """
+
     os.makedirs("./tests", exist_ok=True)
 
     with open(f"./tests/{filename}", "w") as f:
@@ -179,12 +212,32 @@ def write_data(filename: str, out_format: str, data: List[dict]) -> None:
         else:
             raise ValueError("Invalid output format")
 
-        f.close()
 
-# This function is used to load training configurations from the JSON batch file.
-# A batch file is simple a list of different training configurations that will
-# be processed sequentially by the program.
 def load_configs_from_file(filename: str) -> List[TrainingConfig]:
+    """
+    Loads training configurations from a JSON batch file.
+
+    A batch file is simply a list of different training configurations that will
+    be processed sequentially by the program. Each configuration in the file
+    is validated using Pydantic before being returned.
+
+    Args:
+        filename (str): Path to the JSON file containing the batch configurations
+
+    Returns:
+        List[TrainingConfig]: List of validated TrainingConfig objects loaded from the file
+
+    Raises:
+        FileNotFoundError: If the specified filename does not exist
+        json.JSONDecodeError: If the JSON file cannot be decoded
+        ValidationError: If any configuration in the file fails Pydantic validation
+        Exception: Re-raises the last caught exception after printing error messages
+
+    Note:
+        The function prints user-friendly error messages for common failure cases
+        before re-raising the exception.
+    """
+
     try:
         with open(filename, "r") as file:
             batches_data = json.load(file)
@@ -194,11 +247,11 @@ def load_configs_from_file(filename: str) -> List[TrainingConfig]:
 
             return validated_training_configs
     except FileNotFoundError:
-        print(f"{filename} does not exists.")
+        logger.error(f"{filename} does not exists.")
     except json.JSONDecodeError:
-        print(f"It wasn't possible to decode JSON file {filename}.")
+        logger.error(f"It wasn't possible to decode JSON file {filename}.")
     except ValidationError as e:
-        print("Error: The configuration file is invalid.")
+        logger.error("Error: The configuration file is invalid.")
         print(e) # Pydantic validation error output
 
     raise
@@ -236,7 +289,49 @@ def main(
     out_format: str = typer.Option("csv", help="Format of the output file (csv or json)")
 ):
     """
-    CLI tool for training configuration with all parameters.
+    CLI tool for neural network training configuration with sparse update support.
+
+    This tool provides a command-line interface for training neural
+    networks with configurable parameters. It supports both single training runs
+    with command-line parameters and batch processing from JSON configuration files.
+
+    The tool processes training configurations sequentially and outputs results
+    including validation accuracy, loss, memory usage, and computational metrics
+    for each training run. Results are saved in the specified format (CSV or JSON)
+    with comprehensive information about the training process.
+
+    Args:
+        run_dir: Directory path where training runs will be stored
+        dataset: Type of dataset to use for training
+        root: Root path to the dataset directory
+        image_size: Input image size for the model
+        num_classes: Number of output classes for classification
+        n_epochs: Total number of training epochs
+        base_lr: Base learning rate for the optimizer
+        warmup_epochs: Number of epochs for learning rate warmup
+        eval_per_epochs: Frequency of validation evaluation in epochs
+        net_name: Name/identifier of the neural network architecture
+        enable_backward_config: Whether to enable sparse update configurations
+        n_bias_update: Number of bias parameters to update (for sparse training)
+        n_weight_update: Number of weight parameters to update (for sparse training)
+        weight_update_ratio: Ratio of weights to update during sparse training
+        manual_weight_idx: Manual specification of weight indices for sparse updates
+        manual_bias_idx: Manual specification of bias indices for sparse updates
+        quantize_gradient: Whether to apply gradient quantization
+        batch: Path to JSON file containing multiple training configurations
+        out_format: Output format for results ("csv" or "json")
+
+    Note:
+        If a batch file is provided, individual CLI parameters are ignored and
+        the tool processes all configurations from the batch file sequentially.
+
+        The output includes base information (model name, dataset, epochs, etc.)
+        plus checkpoint information about accuracy results at different epoch
+        checkpoints. Checkpoint evaluation frequency depends on the eval_per_epochs
+        parameter in the training configuration.
+
+        Memory usage is calculated as: (memory_elements / 1024 / 8) KB
+        where memory_elements represents the number of elements saved for backward pass.
     """
 
     print("Training started with the provided configuration...")
