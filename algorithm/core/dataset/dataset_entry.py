@@ -19,7 +19,7 @@ def build_dataset():
         )
     elif configs.data_provider.dataset == 'pets':
         dataset = ImageFolder(
-            root=f"{configs.data_provider.root}/dataset/pets",
+            root=f"{configs.data_provider.root}/pets",
             transforms=ImageTransform(),
         )
     elif configs.data_provider.dataset == "cub":
