@@ -31,6 +31,10 @@ from core.builder.lr_scheduler import build_lr_scheduler
 from core.utils.partial_backward import parsed_backward_config, prepare_model_for_backward_config, \
     get_all_conv_ops, nelem_saved_for_backward, compute_macs
 
+# Python set for containing all allowed output formats.
+# This way it will be simple to add a new output format for the data.
+ALLOWED_FORMATS = {"csv", "json"}
+
 # Here we set the device variable depending on the platform.
 # Specifically, we consider only CUDA (NVIDIA) and mps (Apple Silicon).
 # If neither of the two is available, we just use the CPU.
@@ -177,7 +181,7 @@ def perform_training(training_config: TrainingConfig):
         return (trainer.training_validations, saved_for_backward, backward_macs)  # for ray tune
 
 
-def write_data(filename: str, out_format: str, data: List[dict]) -> None:
+def write_data(filename: str, out_format: str, data: List[dict], allowed_formats: set[str]) -> None:
     """
     Writes data into the selected output format (CSV or JSON).
 
@@ -197,20 +201,24 @@ def write_data(filename: str, out_format: str, data: List[dict]) -> None:
         For JSON format, the data is written with 4-space indentation for readability.
     """
 
+    if out_format not in allowed_formats:
+        raise ValueError(f"Unsupported format: {out_format}. Use: {allowed_formats}")
+
     os.makedirs("./tests", exist_ok=True)
 
-    with open(f"./tests/{filename}", "w") as f:
-        if out_format == "csv":
-            csv_header = list(data[0].keys())
-            writer = csv.DictWriter(f, fieldnames=csv_header)
+    try:
+        with open(f"./tests/{filename}", "w") as f:
+            if out_format == "csv":
+                csv_header = list(data[0].keys())
+                writer = csv.DictWriter(f, fieldnames=csv_header)
 
-            writer.writeheader()
-            writer.writerows(data)
-        elif out_format == "json":
-            json_data = json.dumps(data, indent=4)
-            f.write(json_data)
-        else:
-            raise ValueError("Invalid output format")
+                writer.writeheader()
+                writer.writerows(data)
+            elif out_format == "json":
+                json_data = json.dumps(data, indent=4)
+                f.write(json_data)
+    except IOError as e:
+        raise IOError(f"Failed to write to {filename}: {e}")
 
 
 def load_configs_from_file(filename: str) -> List[TrainingConfig]:
@@ -407,7 +415,7 @@ def main(
             data.append(row_dict)
 
     filename = f"training_{time()}.{out_format}"
-    write_data(filename, out_format, data)
+    write_data(filename, out_format, data, ALLOWED_FORMATS)
 
 if __name__ == "__main__":
     typer.run(main)
